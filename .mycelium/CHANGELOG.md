@@ -244,3 +244,13 @@ Stripped to: Mycelium protocol, project conventions, and per-domain how-to-add-a
 **Entry ID:** myc_202605200652180047
 Reduced to a pointer to /CLAUDE.md plus the Mycelium requirement
 ---
+
+### 2026-05-20T06:55:43.207977+00:00 — cursor-opus (primary) — `README.md`
+**Entry ID:** myc_202605200655430048
+Documents how to relocate ci.yml back to .github/workflows after granting workflow scope to gh
+---
+
+### 2026-05-20T06:55:43.264593+00:00 — cursor-opus (qa_gate) — `.`
+**Entry ID:** myc_202605200655430049
+48/48 tests passing locally; vite build succeeds (Cesium assets emitted to dist/cesium 15M); FastAPI app imports and registers all 4 routes; initial commit 0a8b87a pushed to github.com/nitepoetlaureate/GRIDLAND8
+---
