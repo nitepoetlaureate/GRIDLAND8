@@ -1,0 +1,26 @@
+{
+  "_comment": "Copy to api-keys.json and fill in values. Never commit api-keys.json.",
+  "discovery": {
+    "mapillary": { "api_key": "", "tier": "free", "register_at": "mapillary.com/app/settings/developers" },
+    "greynoise": { "api_key": "", "tier": "free", "register_at": "greynoise.io/plans/community" },
+    "shodan": { "api_key": "", "tier": "v2-paid", "note": "$49/mo — not required for v1" },
+    "censys": { "api_id": "", "api_secret": "", "tier": "v2", "note": "250 queries/month free" }
+  },
+  "realtime": {
+    "opensky": { "username": "", "password": "", "tier": "free", "note": "Registered account = higher rate limit" },
+    "aishub": { "username": "", "tier": "free", "register_at": "aishub.net/register" },
+    "aprs_fi": { "api_key": "", "tier": "free", "register_at": "aprs.fi/page/api" },
+    "n2yo": { "api_key": "", "tier": "free", "register_at": "n2yo.com/api/" }
+  },
+  "contextual": {
+    "openweathermap": { "api_key": "", "tier": "free", "limit": "60 calls/min" },
+    "openaq": { "api_key": "", "tier": "free" },
+    "nasa_firms": { "map_key": "", "tier": "free", "limit": "5000 tx per 10 min" },
+    "transitland": { "api_key": "", "tier": "free" },
+    "mta_nyc": { "api_key": "", "tier": "free", "register_at": "api.mta.info" },
+    "kartaview": { "access_token": "", "tier": "free" }
+  },
+  "infrastructure": {
+    "cesium_ion": { "token": "", "tier": "free-tier", "note": "Not required for v1 (using OSM + NASA GIBS)" }
+  }
+}

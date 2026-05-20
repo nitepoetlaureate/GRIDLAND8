@@ -1,0 +1,22 @@
+{
+  "version": "1",
+  "rfc1918_blocks": [
+    "10.0.0.0/8",
+    "172.16.0.0/12",
+    "192.168.0.0/16",
+    "127.0.0.0/8",
+    "169.254.0.0/16",
+    "::1/128",
+    "fc00::/7",
+    "fe80::/10"
+  ],
+  "residential_org_patterns": [
+    "residential", "home", "comcast", "cox", "verizon-wireless",
+    "att-internet", "spectrum", "charter", "cable one", "dsl", "broadband"
+  ],
+  "required_fields": {
+    "camera": ["id", "lat", "lon", "source", "url", "fetched_at"],
+    "aircraft": ["icao24", "lat", "lon", "fetched_at"],
+    "context": ["fetched_at"]
+  }
+}

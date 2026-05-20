@@ -1,0 +1,100 @@
+# ─── Secrets & environment ───────────────────────────────────────────────────
+.env
+.env.*
+!.env.example
+config/api-keys.json
+config/api-keys.*.json
+!config/api-keys.example.json
+*.key
+*.pem
+*.secret
+cesium-ion-token.txt
+secrets/
+
+# ─── Python ──────────────────────────────────────────────────────────────────
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+venv/
+env/
+.venv/
+ENV/
+pip-log.txt
+.pytest_cache/
+.coverage
+coverage.xml
+htmlcov/
+*.egg-info/
+dist/
+build/
+*.egg
+MANIFEST
+
+# ─── Node / Frontend ─────────────────────────────────────────────────────────
+node_modules/
+.parcel-cache/
+.vite/
+dist/
+*.tsbuildinfo
+
+# ─── Runtime cache (never commit API response cache) ─────────────────────────
+data/cache/
+*.cache
+*.pyc
+
+# ─── Mycelium ephemeral outputs ──────────────────────────────────────────────
+# (committed: log.json, CHANGELOG.md, archive/, verifications/, gate-*.md)
+.mycelium/profiles/
+.mycelium/bench_*.md
+.mycelium/test-report-*.md
+
+# ─── Test outputs ────────────────────────────────────────────────────────────
+.pytest_cache/
+junit.xml
+test-results/
+
+# ─── OS artifacts ────────────────────────────────────────────────────────────
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+desktop.ini
+
+# ─── IDE ─────────────────────────────────────────────────────────────────────
+.vscode/settings.json
+.vscode/launch.json
+!.vscode/extensions.json
+.idea/
+*.swp
+*.swo
+*~
+.ropeproject/
+
+# ─── Logs ────────────────────────────────────────────────────────────────────
+*.log
+logs/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# ─── Cursor / debug ──────────────────────────────────────────────────────────
+.cursor/
+terminals/
+.cursor/debug-*.log
+
+# ─── Docker ──────────────────────────────────────────────────────────────────
+docker-compose.override.yml
+
+# ─── Large binary assets (download at build time, do not commit) ─────────────
+src/frontend/assets/models/*.glb
+src/frontend/assets/skybox/*.jpg
+
+# ─── Cesium Ion token (if ever used) ─────────────────────────────────────────
+public/cesium-token.js
+src/frontend/cesium-token.js

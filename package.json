@@ -1,0 +1,23 @@
+{
+  "name": "gridland",
+  "version": "0.1.0",
+  "description": "GRIDLAND — Public infrastructure visibility platform.",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "cesium": "^1.141.0",
+    "satellite.js": "^5.0.0"
+  },
+  "devDependencies": {
+    "vite": "^5.4.0",
+    "vite-plugin-cesium": "^1.2.23"
+  },
+  "engines": {
+    "node": ">=20.0.0"
+  }
+}
