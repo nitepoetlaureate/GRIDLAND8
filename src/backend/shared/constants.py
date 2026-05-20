@@ -20,6 +20,8 @@ SRC_LIVECAM = "livecam"
 SRC_NYCTMC = "nyctmc"
 SRC_CR511 = "castlerock_511"
 SRC_NPS = "nps_webcams"
+SRC_PENNDOT = "penndot"
+SRC_CAM2 = "cam2"
 
 # Publication status of a result's underlying source
 PUB_OPERATOR_PUBLISHED = "operator_published"

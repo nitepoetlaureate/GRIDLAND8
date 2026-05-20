@@ -1,10 +1,18 @@
 /** GRIDLAND frontend entry point. */
 import * as Cesium from "cesium";
-import { createViewer, flyTo } from "./cesium/viewer.js";
+import {
+  cameraState,
+  createViewer,
+  flyTo,
+  flyToPreset,
+  heightForScanRadius,
+} from "./cesium/viewer.js";
 import { CameraLayer } from "./entities/cameras.js";
 import { AircraftLayer } from "./entities/aircraft.js";
 import { SatelliteLayer } from "./entities/satellites.js";
 import { TransitLayer } from "./entities/transit.js";
+import { IndegoLayer } from "./entities/indego.js";
+import { ContextPoiLayer } from "./entities/context-pois.js";
 import { GibsLayers } from "./cesium/gibs.js";
 import { discover, context, health, whatsHere } from "./api.js";
 import { LiveSocket, liveUrl } from "./ws.js";
@@ -35,6 +43,15 @@ window.__gridland_dbg = dbg;
 // #endregion
 
 const $ = (id) => document.getElementById(id);
+
+function isPhillyArea(lat, lon) {
+  return lat > 39.86 && lat < 40.14 && lon > -75.28 && lon < -74.95;
+}
+
+function setLayerCheckbox(key, on) {
+  const el = document.querySelector(`input[data-layer="${key}"]`);
+  if (el) el.checked = on;
+}
 
 function setStatus(text, kind = "") {
   const el = $("status");
@@ -97,6 +114,16 @@ function renderContext(ctx) {
         `<li><b>${a.route_name ?? a.route_id ?? ""}</b>: ${a.current_message ?? a.advisory_message ?? a.detour_message ?? ""}</li>`,
       ).join("") + `</ul>`);
   }
+  if (ctx.septa_detours?.length) {
+    parts.push(`<h4>SEPTA bus detours</h4><ul>` +
+      ctx.septa_detours.slice(0, 6).map(d =>
+        `<li><b>${d.route_id ?? ""}</b> ${d.direction ?? ""}: ${d.message ?? d.reason ?? ""}</li>`,
+      ).join("") + `</ul>`);
+  }
+  if (ctx.indego_stations?.length) {
+    const bikes = ctx.indego_stations.reduce((n, s) => n + (s.bikes ?? 0), 0);
+    parts.push(`<h4>Indego (nearby)</h4><div>${ctx.indego_stations.length} stations · ${bikes} bikes available</div>`);
+  }
   if (ctx.service_requests?.length) {
     const counts = {};
     for (const s of ctx.service_requests) {
@@ -124,6 +151,44 @@ function renderContext(ctx) {
         `<li><a href="${w.url}" target="_blank" rel="noopener">${w.title}</a> (${w.distance_m}m)</li>`,
       ).join("") + `</ul>`);
   }
+  const odp = ctx.opendataphilly?.layers;
+  if (odp) {
+    if (odp.crime_incidents?.length) {
+      parts.push(`<h4>Crime dispatches (7d, ODP)</h4><ul>` +
+        odp.crime_incidents.slice(0, 6).map(c =>
+          `<li>${c.type ?? ""} · ${c.block ?? ""}</li>`,
+        ).join("") + `</ul>`);
+    }
+    if (odp.shootings?.length) {
+      parts.push(`<h4>Shootings (1y, ODP)</h4><div>${odp.shootings.length} in area</div>`);
+    }
+    if (odp.snow_routes?.length) {
+      parts.push(`<h4>Snow emergency routes</h4><div>${odp.snow_routes.length} city routes</div>`);
+    }
+    if (odp.parks?.length) {
+      parts.push(`<h4>Parks (PPR)</h4><ul>` +
+        odp.parks.slice(0, 4).map(p =>
+          `<li>${p.name ?? ""}${p.address ? ` · ${p.address}` : ""}</li>`,
+        ).join("") + `</ul>`);
+    }
+    if (odp.polling_places?.length) {
+      parts.push(`<h4>Polling places</h4><div>${odp.polling_places.length} nearby</div>`);
+    }
+    if (odp.zoning_overlays?.length) {
+      parts.push(`<h4>Zoning overlays</h4><div>${odp.zoning_overlays.length} in area</div>`);
+    }
+    if (odp.red_light_cameras?.length) {
+      parts.push(`<h4>Red-light cameras (PPA)</h4><div>${odp.red_light_cameras.length} citywide sites</div>`);
+    }
+    if (odp.parcel_count != null && odp.parcel_count > 0) {
+      parts.push(`<h4>Parcels in search area</h4><div>${odp.parcel_count} (count only)</div>`);
+    }
+    const pd = odp.police_district;
+    if (pd && typeof pd === "object") {
+      parts.push(`<h4>Police district</h4><div>${pd.name ?? ""} (#${pd.district_num ?? "?"})` +
+        (pd.phone ? ` · ${pd.phone}` : "") + `</div>`);
+    }
+  }
   target.innerHTML = parts.join("");
 }
 
@@ -149,7 +214,7 @@ function renderWhatsHere(payload) {
   target.hidden = false;
 }
 
-function wireLayerToggles({ cameras, aircraft, satellites, transit, gibs }) {
+function wireLayerToggles({ cameras, aircraft, satellites, transit, indego, contextPois, gibs }) {
   document.querySelectorAll('input[type="checkbox"][data-layer]').forEach((el) => {
     el.addEventListener("change", async () => {
       const key = el.dataset.layer;
@@ -177,6 +242,27 @@ function wireLayerToggles({ cameras, aircraft, satellites, transit, gibs }) {
           } else {
             transit.stop();
             transit.setVisible(false);
+          }
+          break;
+        case "context-pois":
+          contextPois.setVisible(on);
+          break;
+        case "indego":
+          if (on) {
+            try {
+              const lat = parseFloat($("lat").value);
+              const lon = parseFloat($("lon").value);
+              setStatus("loading Indego…", "warn");
+              await indego.start(lat, lon, 15);
+              indego.setVisible(true);
+              setStatus(`Indego: ${indego.count()} stations`, "ok");
+            } catch (e) {
+              console.error(e);
+              setStatus("Indego load failed", "error");
+            }
+          } else {
+            indego.stop();
+            indego.setVisible(false);
           }
           break;
         case "satellites":
@@ -247,7 +333,8 @@ function wireWhatsHereClick(viewer) {
 }
 
 async function bootstrap() {
-  const viewer = createViewer("cesium-container");
+  const viewer = await createViewer("cesium-container");
+  const mapStack = viewer._gridlandMapStack ?? {};
   // #region agent log
   dbg("main.js:bootstrap", "viewer created", {
     infoBox: !!viewer.infoBox,
@@ -255,14 +342,21 @@ async function bootstrap() {
     imageryLayerCount: viewer.imageryLayers.length,
     imageryProvider: viewer.imageryLayers.get(0)?.imageryProvider?.constructor?.name ?? null,
     terrainProvider: viewer.terrainProvider?.constructor?.name ?? null,
+    mapStack,
+    camera: cameraState(viewer),
     cesiumVersion: Cesium.VERSION,
-  }, "H1+H3");
+  }, "H1+H3+H6");
   // #endregion
+  if (mapStack.buildings3d === "none") {
+    setStatus("map: OSM 2D · no 3D buildings (add VITE_CESIUM_ION_ACCESS_TOKEN for terrain+buildings)", "warn");
+  }
   const cameras = new CameraLayer(viewer);
   const aircraft = new AircraftLayer(viewer);
   const satellites = new SatelliteLayer(viewer);
   satellites.setVisible(false);
   const transit = new TransitLayer(viewer);
+  const indego = new IndegoLayer(viewer);
+  const contextPois = new ContextPoiLayer(viewer);
   const gibs = new GibsLayers(viewer);
 
   try {
@@ -294,14 +388,33 @@ async function bootstrap() {
   const photosphere = new PhotosphereTransition(viewer);
   photosphere.start();
 
-  wireLayerToggles({ cameras, aircraft, satellites, transit, gibs });
+  wireLayerToggles({ cameras, aircraft, satellites, transit, indego, contextPois, gibs });
   wireWhatsHereClick(viewer);
+
+  function flyQuery(preset) {
+    const lat = parseFloat($("lat").value);
+    const lon = parseFloat($("lon").value);
+    const done = (info) => {
+      dbg("main.js:flyTo", "camera after fly", {
+        preset: preset ?? "scan",
+        ...info,
+        camera: cameraState(viewer),
+        mapStack: viewer._gridlandMapStack,
+      }, "H6");
+    };
+    if (preset) {
+      flyToPreset(viewer, lat, lon, preset, done);
+    } else {
+      const h = heightForScanRadius(parseFloat($("radius").value));
+      flyTo(viewer, lat, lon, h, done);
+    }
+  }
 
   async function scan() {
     const lat = parseFloat($("lat").value);
     const lon = parseFloat($("lon").value);
     const radius = parseFloat($("radius").value);
-    flyTo(viewer, lat, lon, Math.max(15000, radius * 2000));
+    flyQuery(null);
     setStatus("scanning…", "warn");
     try {
       const [d, c] = await Promise.all([
@@ -309,13 +422,35 @@ async function bootstrap() {
         context(lat, lon),
       ]);
       cameras.setAll(d.results);
+      contextPois.setFromContext(c);
+      contextPois.setVisible(true);
+      setLayerCheckbox("context-pois", true);
       renderCounts(d);
       renderContext(c);
+      if (d.results?.length && radius <= 8) {
+        cameras.flyToResults(viewer, { duration: 1.0 });
+      }
+      live.close();
+      live.connect();
+      if (isPhillyArea(lat, lon)) {
+        setLayerCheckbox("transit", true);
+        setLayerCheckbox("indego", true);
+        try {
+          await transit.start();
+          transit.setVisible(true);
+          await indego.start(lat, lon, Math.min(radius, 15));
+          indego.setVisible(true);
+        } catch (e) {
+          console.warn("Philly live layers", e);
+        }
+      }
       // #region agent log
       dbg("main.js:scan", "scan response", {
         query: { lat, lon, radius },
         cameras_total: d.results?.length ?? 0,
+        context_pois: contextPois.count(),
         counts_by_source: d.counts_by_source ?? {},
+        philly_auto_layers: isPhillyArea(lat, lon),
         context_keys_with_data: Object.fromEntries(
           Object.entries(c || {}).map(([k, v]) => [
             k, Array.isArray(v) ? v.length : (v ? 1 : 0)
@@ -324,7 +459,12 @@ async function bootstrap() {
       }, "H2");
       // #endregion
       live.setSubscription({ lat, lon, distance_nm: Math.max(50, radius * 2) });
-      setStatus(`live: streaming · ${d.results.length} cameras`, "ok");
+      const poiN = contextPois.count();
+      setStatus(
+        `scan ok · ${d.results.length} cameras · ${poiN} context pins` +
+        (isPhillyArea(lat, lon) ? ` · SEPTA ${transit.count()}` : ""),
+        "ok",
+      );
     } catch (e) {
       console.error(e);
       setStatus("scan failed", "error");
@@ -332,6 +472,9 @@ async function bootstrap() {
   }
 
   $("go").addEventListener("click", scan);
+  for (const btn of document.querySelectorAll("[data-view]")) {
+    btn.addEventListener("click", () => flyQuery(btn.dataset.view));
+  }
   scan();
 }
 

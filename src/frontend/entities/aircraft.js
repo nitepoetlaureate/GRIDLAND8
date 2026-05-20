@@ -9,8 +9,9 @@ function aircraftDescription(ac) {
     ["Callsign", ac.callsign?.trim() || "—"],
     ["Lat/Lon", `${ac.lat?.toFixed?.(5)}, ${ac.lon?.toFixed?.(5)}`],
     ["Altitude", ac.alt_m != null ? `${Math.round(ac.alt_m)} m / ${Math.round(ac.alt_m * 3.281)} ft` : "—"],
-    ["Speed", ac.speed_kt != null ? `${Math.round(ac.speed_kt)} kt` : "—"],
-    ["Heading", ac.heading_deg != null ? `${Math.round(ac.heading_deg)}°` : "—"],
+    ["Speed", ac.velocity_ms != null
+      ? `${Math.round(ac.velocity_ms / 0.514444)} kt` : "—"],
+    ["Heading", ac.track_deg != null ? `${Math.round(ac.track_deg)}°` : "—"],
     ["On ground", ac.on_ground ? "yes" : "no"],
     ["Country", ac.origin_country || "—"],
   ];
@@ -30,22 +31,23 @@ export class AircraftLayer {
   }
 
   handleFrame(frame) {
-    if (frame.kind === "snapshot") this._applySnapshot(frame);
-    else if (frame.kind === "diff") this._applyDiff(frame);
+    const now = Date.now();
+    if (frame.kind === "snapshot") this._applySnapshot(frame, now);
+    else if (frame.kind === "diff") this._applyDiff(frame, now);
+    // Refresh lastSeen for all tracked aircraft on every frame (diffs often empty).
+    for (const rec of this._index.values()) rec.lastSeen = now;
     this._expireStale();
   }
 
-  _applySnapshot(frame) {
+  _applySnapshot(frame, now) {
     this.collection.entities.removeAll();
     this._index.clear();
-    const now = Date.now();
-    for (const ac of frame.items) {
+    for (const ac of frame.items || []) {
       this._index.set(ac.icao24, { entity: this._add(ac), lastSeen: now });
     }
   }
 
-  _applyDiff(frame) {
-    const now = Date.now();
+  _applyDiff(frame, now) {
     for (const ac of frame.added ?? []) {
       const rec = this._index.get(ac.icao24);
       if (rec) {
@@ -89,12 +91,14 @@ export class AircraftLayer {
       description: aircraftDescription(ac),
       position: Cesium.Cartesian3.fromDegrees(ac.lon, ac.lat, ac.alt_m ?? 0),
       point: {
-        pixelSize: 6,
+        pixelSize: ac.on_ground ? 7 : 9,
         color: ac.on_ground
           ? Cesium.Color.fromCssColorString("#8b95a6")
           : Cesium.Color.fromCssColorString("#41d692"),
         outlineColor: Cesium.Color.BLACK,
-        outlineWidth: 1,
+        outlineWidth: 2,
+        disableDepthTestDistance: Number.POSITIVE_INFINITY,
+        scaleByDistance: new Cesium.NearFarScalar(2e3, 1.5, 3e6, 0.6),
       },
       label: {
         text: this._labelText(ac),

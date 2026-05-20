@@ -101,7 +101,8 @@ def parse_trainview(payload: list | None) -> list[dict]:
     return out
 
 
-async def all_vehicles() -> list[dict]:
+async def all_vehicles() -> tuple[list[dict], dict[str, str]]:
+    """Return (vehicles, source_status). status values: ok | empty | error."""
     s = get_settings()
     tv, rr = await asyncio.gather(
         get_json(TRANSITVIEW, ttl_s=s.cache_ttl_septa_vehicles_s),
@@ -109,12 +110,25 @@ async def all_vehicles() -> list[dict]:
         return_exceptions=True,
     )
     out: list[dict] = []
-    if not isinstance(tv, BaseException):
-        out.extend(parse_transitview(tv))
-    else:
+    status: dict[str, str] = {}
+    if isinstance(tv, BaseException):
         log.warning("SEPTA TransitView failed: %s", tv)
-    if not isinstance(rr, BaseException):
-        out.extend(parse_trainview(rr))
+        status["transitview"] = "error"
+    elif tv is None:
+        log.warning("SEPTA TransitView returned no data")
+        status["transitview"] = "error"
     else:
+        parsed = parse_transitview(tv)
+        out.extend(parsed)
+        status["transitview"] = "ok" if parsed else "empty"
+    if isinstance(rr, BaseException):
         log.warning("SEPTA TrainView failed: %s", rr)
-    return out
+        status["trainview"] = "error"
+    elif rr is None:
+        log.warning("SEPTA TrainView returned no data")
+        status["trainview"] = "error"
+    else:
+        parsed = parse_trainview(rr)
+        out.extend(parsed)
+        status["trainview"] = "ok" if parsed else "empty"
+    return out, status

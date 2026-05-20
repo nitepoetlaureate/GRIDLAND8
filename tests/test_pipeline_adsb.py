@@ -59,6 +59,15 @@ def test_normalize_skips_invalid_records():
 
 
 @pytest.mark.asyncio
+async def test_fetch_accepts_aircraft_key(monkeypatch):
+    async def fake_get_json(url, **kwargs):
+        return {"aircraft": _ADSB_OK["ac"]}
+    monkeypatch.setattr(adsb_fi, "get_json", fake_get_json)
+    out = await adsb_fi.fetch(39.95, -75.16, 250)
+    assert len(out) == 2
+
+
+@pytest.mark.asyncio
 async def test_fetch_with_mocked_http(monkeypatch):
     async def fake_get_json(url, **kwargs):
         return _ADSB_OK

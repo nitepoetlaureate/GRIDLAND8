@@ -6,9 +6,19 @@ import logging
 
 from backend.context.models import ContextBundle
 from backend.context.sources import (
-    aviation, firms, nws, openaq, philly311, septa_alerts, usgs, usgs_water,
+    aviation,
+    firms,
+    nws,
+    openaq,
+    opendataphilly,
+    philly311,
+    septa_alerts,
+    septa_detours,
+    usgs,
+    usgs_water,
     wikipedia,
 )
+from backend.pipeline.sources import indego
 from backend.shared.http import utc_now_iso
 
 log = logging.getLogger(__name__)
@@ -28,11 +38,15 @@ async def gather(lat: float, lon: float) -> ContextBundle:
         septa_alerts.near(lat, lon),
         philly311.recent(lat, lon),
         usgs_water.gauges_near(lat, lon),
+        opendataphilly.gather(lat, lon, radius_km=25.0),
+        septa_detours.near(lat, lon),
+        indego.stations_near(lat, lon, radius_km=15.0),
         return_exceptions=True,
     )
     errors: dict[str, str] = {}
     (weather, alerts, wiki, quakes, fires, aq, metars_,
-     transit_alerts, service_requests, water_gauges) = results
+     transit_alerts, service_requests, water_gauges, odp_bundle,
+     detours, indego_stations) = results
     if isinstance(weather, BaseException):
         errors["weather"] = str(weather); weather = None
     if isinstance(alerts, BaseException):
@@ -53,6 +67,12 @@ async def gather(lat: float, lon: float) -> ContextBundle:
         errors["service_requests"] = str(service_requests); service_requests = []
     if isinstance(water_gauges, BaseException):
         errors["water_gauges"] = str(water_gauges); water_gauges = []
+    if isinstance(odp_bundle, BaseException):
+        errors["opendataphilly"] = str(odp_bundle); odp_bundle = None
+    if isinstance(detours, BaseException):
+        errors["septa_detours"] = str(detours); detours = []
+    if isinstance(indego_stations, BaseException):
+        errors["indego_stations"] = str(indego_stations); indego_stations = []
     return ContextBundle(
         query={"lat": lat, "lon": lon},
         weather=weather,
@@ -63,8 +83,11 @@ async def gather(lat: float, lon: float) -> ContextBundle:
         air_quality=aq or [],
         metars=metars_ or [],
         transit_alerts=transit_alerts or [],
+        septa_detours=detours or [],
+        indego_stations=indego_stations or [],
         service_requests=service_requests or [],
         water_gauges=water_gauges or [],
+        opendataphilly=odp_bundle if isinstance(odp_bundle, dict) else None,
         fetched_at=utc_now_iso(),
         errors=errors,
     )

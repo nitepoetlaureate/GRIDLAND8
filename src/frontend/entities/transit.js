@@ -33,6 +33,9 @@ export class TransitLayer {
     this.dataSource = new Cesium.CustomDataSource("septa-transit");
     viewer.dataSources.add(this.dataSource);
     this.dataSource.show = false;
+    this.dataSource.clustering.enabled = true;
+    this.dataSource.clustering.pixelRange = 40;
+    this.dataSource.clustering.minimumClusterSize = 12;
     this._index = new Map();
     this._timer = null;
     this._enabled = false;
@@ -66,27 +69,41 @@ export class TransitLayer {
     } catch {
       return;
     }
+    const sources = payload.sources || {};
+    const failed = Object.values(sources).some((s) => s === "error");
+    if (failed && !payload.vehicles?.length) return;
+
     const seen = new Set();
+    const keepIfSourceDown = (kind) => {
+      if (kind === "regional_rail" && sources.trainview === "error") return true;
+      if (kind === "bus_trolley" && sources.transitview === "error") return true;
+      return false;
+    };
     for (const v of payload.vehicles || []) {
       seen.add(v.id);
       const pos = Cesium.Cartesian3.fromDegrees(v.lon, v.lat, 0);
-      const existing = this._index.get(v.id);
-      if (existing) {
-        existing.position = pos;
-        existing.description = description(v);
-        existing.label.text = this._labelText(v);
-        existing.point.color = colorFor(v);
+      const isRail = v.kind === "regional_rail";
+      const rec = this._index.get(v.id);
+      if (rec) {
+        rec.entity.position = pos;
+        rec.entity.description = description(v);
+        rec.entity.label.text = this._labelText(v);
+        rec.entity.point.color = colorFor(v);
+        rec.entity.point.pixelSize = isRail ? 12 : 9;
+        rec.kind = v.kind;
       } else {
         const entity = this.dataSource.entities.add({
           name: this._labelText(v),
           description: description(v),
           position: pos,
           point: {
-            pixelSize: 6,
+            pixelSize: isRail ? 12 : 9,
             color: colorFor(v),
             outlineColor: Cesium.Color.BLACK,
-            outlineWidth: 1,
-            heightReference: Cesium.HeightReference.RELATIVE_TO_GROUND,
+            outlineWidth: 2,
+            disableDepthTestDistance: Number.POSITIVE_INFINITY,
+            scaleByDistance: new Cesium.NearFarScalar(500, 1.4, 5e5, 0.7),
+            heightReference: Cesium.HeightReference.CLAMP_TO_GROUND,
           },
           label: {
             text: this._labelText(v),
@@ -96,18 +113,19 @@ export class TransitLayer {
             outlineWidth: 2,
             style: Cesium.LabelStyle.FILL_AND_OUTLINE,
             pixelOffset: new Cesium.Cartesian2(8, 0),
-            distanceDisplayCondition: new Cesium.DistanceDisplayCondition(0, 2e4),
+            distanceDisplayCondition: new Cesium.DistanceDisplayCondition(0, 8e4),
+            scaleByDistance: new Cesium.NearFarScalar(500, 1, 4e5, 0),
           },
           properties: v,
         });
-        this._index.set(v.id, entity);
+        this._index.set(v.id, { entity, kind: v.kind });
       }
     }
-    for (const [id, entity] of [...this._index]) {
-      if (!seen.has(id)) {
-        this.dataSource.entities.remove(entity);
-        this._index.delete(id);
-      }
+    for (const [id, rec] of [...this._index]) {
+      if (seen.has(id)) continue;
+      if (keepIfSourceDown(rec.kind)) continue;
+      this.dataSource.entities.remove(rec.entity);
+      this._index.delete(id);
     }
   }
 

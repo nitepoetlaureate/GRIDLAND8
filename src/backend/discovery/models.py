@@ -11,6 +11,7 @@ SourceName = Literal[
     "caltrans", "wsdot", "n511ny",
     "livecam",
     "nyctmc", "castlerock_511", "nps_webcams",
+    "penndot", "cam2",
 ]
 
 PublicationStatus = Literal[

@@ -20,6 +20,9 @@ v0.3 — Implemented sources:
 | Realtime    | ADSB.fi (aircraft)       | none | `backend.pipeline.sources.adsb_fi`     | n/a |
 | Realtime    | Celestrak (satellite TLE; client-side SGP4) | none | `backend.pipeline.sources.celestrak` | n/a |
 | Realtime    | SEPTA TransitView + TrainView (Philly live transit) | none | `backend.pipeline.sources.septa_vehicles` | n/a |
+| Realtime    | Indego bike share GBFS (Philly) | none | `backend.pipeline.sources.indego` | `/api/indego/stations` |
+| Discovery   | PennDOT ArcGIS camera locations (PA; live video needs 511PA key) | none | `backend.discovery.sources.penndot` | n/a |
+| Discovery   | Purdue CAM2 camera index (optional credentials) | register at [cam2project.net](https://www.cam2project.net/) | `backend.discovery.sources.cam2` | n/a |
 | Context     | NWS forecast + alerts    | none | `backend.context.sources.nws`          | n/a |
 | Context     | Wikipedia GeoSearch      | none | `backend.context.sources.wikipedia`    | n/a |
 | Context     | USGS Earthquakes (FDSN)  | none | `backend.context.sources.usgs`         | n/a |
@@ -27,11 +30,16 @@ v0.3 — Implemented sources:
 | Context     | OpenAQ v3 (air quality)  | free key (`OPENAQ_API_KEY`) | `backend.context.sources.openaq`        | n/a |
 | Context     | aviationweather.gov METARs | none | `backend.context.sources.aviation`    | n/a |
 | Context     | SEPTA service alerts (Philly)  | none | `backend.context.sources.septa_alerts` | n/a |
+| Context     | SEPTA bus detours (Philly) | none | `backend.context.sources.septa_detours` | n/a |
 | Context     | Philadelphia 311 service requests | none | `backend.context.sources.philly311`    | n/a |
+| Context     | OpenDataPhilly Carto bundle (crime, shootings, snow routes, parks, polling, zoning, red-light sites, parcel count, police district) | none | `backend.context.sources.opendataphilly` | n/a |
+| Context     | Indego stations near query (Philly) | none | `backend.pipeline.sources.indego` | bundled in `/api/context` |
 | Context     | USGS Water Services (stream gauges) | none | `backend.context.sources.usgs_water`   | n/a |
 | Imagery     | NASA GIBS WMTS overlays (clouds / fires / AOD) | none | `src/frontend/cesium/gibs.js` | n/a |
 
-Sources that require a free API key self-skip (return `[]`) when the key isn't set, so the system runs out of the box with no keys configured. Add keys in `.env` (see `config/.env.example`) to light them up.
+Sources that require a free API key self-skip (return `[]`) when the key isn't set, so the system runs out of the box with no keys configured.
+
+**Secrets file:** put all keys in **`.env` at the project root** (`GRIDLAND8/.env`). A starter file is created there; `config/.env.example` is the documented template only. That file is gitignored — never commit it. Run `make install-hooks` to enable a pre-commit check that blocks accidental secret commits. Only `VITE_*` variables are exposed to the browser (Cesium Ion).
 
 ## Quick start
 
@@ -60,6 +68,7 @@ docker compose up --build
 | GET | `/api/satellites` | `group`, `limit` | `{ items: [{name, line1, line2}, ...] }` (Celestrak TLEs; SGP4 happens client-side) |
 | GET | `/api/satellites/catalogs` | — | `{ catalogs: ["stations", "active", ...] }` |
 | GET | `/api/septa/vehicles` | — | `{ count, bus_trolley, regional_rail, vehicles: [...] }` (live SEPTA bus/trolley/rail positions) |
+| GET | `/api/indego/stations` | `lat`, `lon`, `radius_km` | `{ count, renting, stations: [...] }` (Indego GBFS) |
 | GET | `/api/whats_here` | `lat`, `lon`, `radius_km`, `photosphere_radius_m` | aggregated cameras + context + photospheres at a point |
 | WS  | `/ws/live` | subscribe with `{lat, lon, distance_nm}` | first frame `kind:"snapshot"`, subsequent `kind:"diff"` (added/updated/removed by `icao24`) |
 
@@ -113,7 +122,7 @@ src/backend/
 
 src/frontend/
   main.js             entry
-  cesium/viewer.js    Ion-free Cesium viewer
+  cesium/viewer.js    OSM 2D basemap; optional Ion terrain + OSM 3D Buildings
   entities/           cameras.js, aircraft.js
   api.js, ws.js, style.css
 

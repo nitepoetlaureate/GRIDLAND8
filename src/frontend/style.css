@@ -107,6 +107,27 @@ button {
 
 button:hover { filter: brightness(1.1); }
 
+.view-presets {
+  margin-top: 8px;
+  align-items: center;
+}
+
+.view-presets .view-label {
+  font-size: 11px;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  flex: 0 0 auto;
+}
+
+.view-presets button {
+  background: #0d131c;
+  color: var(--text);
+  font-weight: 500;
+  padding: 4px 8px;
+  font-size: 11px;
+}
+
 .counts, .context {
   margin-top: 10px;
   font-size: 12px;

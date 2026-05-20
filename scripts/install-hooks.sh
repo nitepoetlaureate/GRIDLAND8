@@ -11,7 +11,7 @@ if [[ ! -d "$hooks_dst" ]]; then
   exit 1
 fi
 
-for h in commit-msg post-commit pre-push; do
+for h in pre-commit commit-msg post-commit pre-push; do
   src="../../$hooks_src/$h"
   dst="$hooks_dst/$h"
   ln -sf "$src" "$dst"

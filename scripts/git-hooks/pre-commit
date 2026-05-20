@@ -1,0 +1,5 @@
+#!/usr/bin/env bash
+# Block accidental commit of .env or inline API keys.
+set -e
+repo_root="$(git rev-parse --show-toplevel 2>/dev/null || pwd)"
+exec bash "$repo_root/scripts/check-no-secrets.sh"

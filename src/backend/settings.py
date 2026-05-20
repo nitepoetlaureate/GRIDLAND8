@@ -35,7 +35,11 @@ class Settings(BaseSettings):
     cache_ttl_tle_s: float = 21600.0          # 6 h
     cache_ttl_septa_vehicles_s: float = 10.0  # 10 s (live transit)
     cache_ttl_septa_alerts_s: float = 60.0    # 1 min
+    cache_ttl_septa_detours_s: float = 120.0  # 2 min
+    cache_ttl_indego_s: float = 30.0          # 30 s (GBFS status)
+    cache_ttl_penndot_s: float = 3600.0       # 1 h (camera inventory)
     cache_ttl_phila311_s: float = 300.0       # 5 min
+    cache_ttl_opendataphilly_s: float = 300.0  # 5 min (Carto SQL)
     cache_ttl_usgs_water_s: float = 600.0     # 10 min
     cache_ttl_nyctmc_s: float = 60.0          # 1 min (image refresh fast)
     cache_ttl_cr511_s: float = 60.0           # 1 min
@@ -68,6 +72,8 @@ class Settings(BaseSettings):
     transitland_api_key: str | None = None
     mta_api_key: str | None = None
     nps_api_key: str | None = None
+    cam2_client_id: str | None = None
+    cam2_client_secret: str | None = None
 
     # Satellite catalogs exposed by /api/satellites
     tle_catalogs: list[str] = Field(

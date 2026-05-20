@@ -14,7 +14,10 @@ class ContextBundle(BaseModel):
     air_quality: list[dict] = []
     metars: list[dict] = []
     transit_alerts: list[dict] = []
+    septa_detours: list[dict] = []
+    indego_stations: list[dict] = []
     service_requests: list[dict] = []
     water_gauges: list[dict] = []
+    opendataphilly: dict | None = None
     fetched_at: str
     errors: dict[str, str] = {}

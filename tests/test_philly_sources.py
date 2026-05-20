@@ -54,7 +54,7 @@ async def test_septa_all_vehicles_merges(monkeypatch):
     async def fake_get(url, **kw):
         return _TRANSITVIEW_SAMPLE if "TransitViewAll" in url else _TRAINVIEW_SAMPLE
     monkeypatch.setattr(septa_vehicles, "get_json", fake_get)
-    out = await septa_vehicles.all_vehicles()
+    out, _status = await septa_vehicles.all_vehicles()
     kinds = {v["kind"] for v in out}
     assert kinds == {"bus_trolley", "regional_rail"}
 
@@ -107,27 +107,31 @@ async def test_septa_alerts_in_philly(monkeypatch):
 
 @pytest.mark.asyncio
 async def test_philly311_skipped_outside_philly(monkeypatch):
-    async def fake_get(*a, **kw):
+    from backend.shared import opendataphilly as odp
+
+    async def fake_carto(*a, **kw):
         raise AssertionError("should not be called when outside Philly")
-    monkeypatch.setattr(philly311, "get_json", fake_get)
+    monkeypatch.setattr(odp, "carto_query", fake_carto)
     out = await philly311.recent(35.68, 139.69)
     assert out == []
 
 
 @pytest.mark.asyncio
 async def test_philly311_normalizes(monkeypatch):
-    payload = {"rows": [
+    from backend.shared import opendataphilly as odp
+
+    payload = [
         {"cartodb_id": 1, "service_name": "Pothole",
          "status": "Open", "requested_datetime": "2026-05-19T12:00:00Z",
          "lat": 39.95, "lon": -75.16},
         {"cartodb_id": 2, "service_name": "Streetlight Out",
          "status": "Closed", "requested_datetime": "2026-05-18T12:00:00Z",
-         "lat": "39.96", "lon": "-75.17"},  # string lat/lon, must coerce
-    ]}
+         "lat": "39.96", "lon": "-75.17"},
+    ]
 
-    async def fake_get(url, **kw):
+    async def fake_carto(sql, **kw):
         return payload
-    monkeypatch.setattr(philly311, "get_json", fake_get)
+    monkeypatch.setattr(odp, "carto_query", fake_carto)
     out = await philly311.recent(39.9526, -75.1652, radius_km=5)
     assert len(out) == 2
     assert out[0]["service_name"] == "Pothole"

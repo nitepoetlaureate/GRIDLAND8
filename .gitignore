@@ -2,6 +2,8 @@
 .env
 .env.*
 !.env.example
+config/.env
+config/.env.*
 config/api-keys.json
 config/api-keys.*.json
 !config/api-keys.example.json

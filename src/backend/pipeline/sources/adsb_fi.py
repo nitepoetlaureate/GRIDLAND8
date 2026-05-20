@@ -3,7 +3,7 @@
 Docs: https://github.com/adsbfi/opendata
 Endpoint shape used here:
   https://opendata.adsb.fi/api/v2/lat/{lat}/lon/{lon}/dist/{nm}
-Returns: { "ac": [ { "hex": "...", "lat": ..., "lon": ..., ... }, ... ], ... }
+Returns: { "aircraft": [...] } or legacy { "ac": [...] }
 """
 from __future__ import annotations
 
@@ -69,5 +69,7 @@ async def fetch(lat: float, lon: float, distance_nm: int = 250) -> list[Aircraft
     data = await get_json(url)
     if not data or not isinstance(data, dict):
         return []
-    records = data.get("ac") or []
+    records = data.get("aircraft") or data.get("ac") or []
+    if not isinstance(records, list):
+        return []
     return normalize(records)

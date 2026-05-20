@@ -9,12 +9,14 @@ from backend.compliance.guardrails import filter_compliant
 from backend.discovery.models import CameraResult, DiscoveryResponse
 from backend.discovery.sources import (
     caltrans,
+    cam2,
     castlerock_511,
     livecams,
     n511ny,
     nps_webcams,
     nyctmc,
     osm,
+    penndot,
     wsdot,
 )
 from backend.shared.http import utc_now_iso
@@ -54,6 +56,8 @@ _SOURCES = (
     nyctmc.search,
     castlerock_511.search,
     nps_webcams.search,
+    penndot.search,
+    cam2.search,
 )
 _SOURCE_NAMES = (
     "osm",
@@ -64,6 +68,8 @@ _SOURCE_NAMES = (
     "nyctmc",
     "castlerock_511",
     "nps_webcams",
+    "penndot",
+    "cam2",
 )
 
 

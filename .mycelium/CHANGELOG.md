@@ -558,3 +558,173 @@ Expand to 5 new sources, add cache + WS diffing, upgrade Mycelium to auto-record
 **Entry ID:** myc_202605200801220110
 
 ---
+
+### 2026-05-20T04:52:37-04:00 — atlas (primary) — `CHANGELOG.md` [9b611a3]
+**Entry ID:** myc_202605200852370111
+
+---
+
+### 2026-05-20T04:52:37-04:00 — atlas (primary) — `log.json` [9b611a3]
+**Entry ID:** myc_202605200852370112
+
+---
+
+### 2026-05-20T04:52:37-04:00 — atlas (primary) — `README.md` [9b611a3]
+**Entry ID:** myc_202605200852370113
+
+---
+
+### 2026-05-20T04:52:37-04:00 — atlas (primary) — `index.html` [9b611a3]
+**Entry ID:** myc_202605200852370114
+
+---
+
+### 2026-05-20T04:52:37-04:00 — atlas (primary) — `photosphere.py` [9b611a3]
+**Entry ID:** myc_202605200852370115
+
+---
+
+### 2026-05-20T04:52:37-04:00 — atlas (primary) — `transit.py` [9b611a3]
+**Entry ID:** myc_202605200852370116
+
+---
+
+### 2026-05-20T04:52:37-04:00 — atlas (primary) — `models.py` [9b611a3]
+**Entry ID:** myc_202605200852370117
+
+---
+
+### 2026-05-20T04:52:37-04:00 — atlas (primary) — `service.py` [9b611a3]
+**Entry ID:** myc_202605200852370118
+
+---
+
+### 2026-05-20T04:52:37-04:00 — atlas (primary) — `philly311.py` [9b611a3]
+**Entry ID:** myc_202605200852370119
+
+---
+
+### 2026-05-20T04:52:37-04:00 — atlas (primary) — `septa_alerts.py` [9b611a3]
+**Entry ID:** myc_202605200852370120
+
+---
+
+### 2026-05-20T04:52:37-04:00 — atlas (primary) — `usgs_water.py` [9b611a3]
+**Entry ID:** myc_202605200852370121
+
+---
+
+### 2026-05-20T04:52:37-04:00 — atlas (primary) — `models.py` [9b611a3]
+**Entry ID:** myc_202605200852370122
+
+---
+
+### 2026-05-20T04:52:37-04:00 — atlas (primary) — `service.py` [9b611a3]
+**Entry ID:** myc_202605200852370123
+
+---
+
+### 2026-05-20T04:52:37-04:00 — atlas (primary) — `caltrans.py` [9b611a3]
+**Entry ID:** myc_202605200852370124
+
+---
+
+### 2026-05-20T04:52:37-04:00 — atlas (primary) — `castlerock_511.py` [9b611a3]
+**Entry ID:** myc_202605200852370125
+
+---
+
+### 2026-05-20T04:52:37-04:00 — atlas (primary) — `livecams.py` [9b611a3]
+**Entry ID:** myc_202605200852370126
+
+---
+
+### 2026-05-20T04:52:37-04:00 — atlas (primary) — `n511ny.py` [9b611a3]
+**Entry ID:** myc_202605200852370127
+
+---
+
+### 2026-05-20T04:52:37-04:00 — atlas (primary) — `nps_webcams.py` [9b611a3]
+**Entry ID:** myc_202605200852370128
+
+---
+
+### 2026-05-20T04:52:37-04:00 — atlas (primary) — `nyctmc.py` [9b611a3]
+**Entry ID:** myc_202605200852370129
+
+---
+
+### 2026-05-20T04:52:37-04:00 — atlas (primary) — `wsdot.py` [9b611a3]
+**Entry ID:** myc_202605200852370130
+
+---
+
+### 2026-05-20T04:52:37-04:00 — atlas (primary) — `main.py` [9b611a3]
+**Entry ID:** myc_202605200852370131
+
+---
+
+### 2026-05-20T04:52:37-04:00 — atlas (primary) — `septa_vehicles.py` [9b611a3]
+**Entry ID:** myc_202605200852370132
+
+---
+
+### 2026-05-20T04:52:37-04:00 — atlas (primary) — `settings.py` [9b611a3]
+**Entry ID:** myc_202605200852370133
+
+---
+
+### 2026-05-20T04:52:37-04:00 — atlas (primary) — `constants.py` [9b611a3]
+**Entry ID:** myc_202605200852370134
+
+---
+
+### 2026-05-20T04:52:37-04:00 — atlas (primary) — `viewer.js` [9b611a3]
+**Entry ID:** myc_202605200852370135
+
+---
+
+### 2026-05-20T04:52:37-04:00 — atlas (primary) — `aircraft.js` [9b611a3]
+**Entry ID:** myc_202605200852370136
+
+---
+
+### 2026-05-20T04:52:37-04:00 — atlas (primary) — `cameras.js` [9b611a3]
+**Entry ID:** myc_202605200852370137
+
+---
+
+### 2026-05-20T04:52:37-04:00 — atlas (primary) — `satellites.js` [9b611a3]
+**Entry ID:** myc_202605200852370138
+
+---
+
+### 2026-05-20T04:52:37-04:00 — atlas (primary) — `transit.js` [9b611a3]
+**Entry ID:** myc_202605200852370139
+
+---
+
+### 2026-05-20T04:52:37-04:00 — atlas (primary) — `main.js` [9b611a3]
+**Entry ID:** myc_202605200852370140
+
+---
+
+### 2026-05-20T04:52:37-04:00 — atlas (primary) — `test_context.py` [9b611a3]
+**Entry ID:** myc_202605200852370141
+
+---
+
+### 2026-05-20T04:52:37-04:00 — atlas (primary) — `test_discovery_osm.py` [9b611a3]
+**Entry ID:** myc_202605200852370142
+
+---
+
+### 2026-05-20T04:52:37-04:00 — atlas (primary) — `test_open_cameras.py` [9b611a3]
+**Entry ID:** myc_202605200852370143
+
+---
+
+### 2026-05-20T04:52:37-04:00 — atlas (primary) — `test_philly_sources.py` [9b611a3]
+**Entry ID:** myc_202605200852370144
+
+---

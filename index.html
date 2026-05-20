@@ -20,12 +20,21 @@
           <label>radius (km)<input id="radius" type="number" step="1" value="25" min="1" max="200" /></label>
           <button id="go">scan</button>
         </div>
+        <div class="row view-presets">
+          <span class="view-label">view</span>
+          <button type="button" data-view="street" title="~350 m — street level">street</button>
+          <button type="button" data-view="neighborhood" title="~2.5 km">area</button>
+          <button type="button" data-view="metro" title="~12 km">metro</button>
+          <button type="button" data-view="orbit" title="~50 km">orbit</button>
+        </div>
         <div id="counts" class="counts"></div>
         <fieldset class="layers">
           <legend>Layers</legend>
           <label><input type="checkbox" data-layer="cameras" checked /> Cameras</label>
+          <label><input type="checkbox" data-layer="context-pois" checked /> Civic / context POIs</label>
           <label><input type="checkbox" data-layer="aircraft" checked /> Aircraft</label>
           <label><input type="checkbox" data-layer="transit" /> SEPTA live transit (Philly)</label>
+          <label><input type="checkbox" data-layer="indego" /> Indego bike share (Philly)</label>
           <label><input type="checkbox" data-layer="satellites" /> Satellites (ISS+stations)</label>
           <label><input type="checkbox" data-layer="gibs-truecolor" /> Clouds (MODIS true color)</label>
           <label><input type="checkbox" data-layer="gibs-fires" /> Active fires (VIIRS)</label>

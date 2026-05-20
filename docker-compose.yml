@@ -5,11 +5,9 @@ services:
       dockerfile: Dockerfile.backend
     ports:
       - "8000:8000"
+    env_file:
+      - .env
     environment:
-      MAPILLARY_API_KEY: ${MAPILLARY_API_KEY:-}
-      GREYNOISE_API_KEY: ${GREYNOISE_API_KEY:-}
-      OPENSKY_USERNAME: ${OPENSKY_USERNAME:-}
-      OPENSKY_PASSWORD: ${OPENSKY_PASSWORD:-}
       CORS_ORIGINS: '["http://localhost", "http://localhost:5173"]'
     restart: unless-stopped
     healthcheck:
