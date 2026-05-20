@@ -1,0 +1,30 @@
+#!/usr/bin/env bash
+# Reject commit messages missing required Mycelium-* trailers.
+# Bypass: `git commit --no-verify` or `GRIDLAND_SKIP_MYCELIUM=1 git commit`.
+set -e
+
+msg_file="$1"
+if [[ "${GRIDLAND_SKIP_MYCELIUM:-0}" == "1" ]]; then
+  exit 0
+fi
+
+# Skip during interactive merge/rebase fixups
+case "$(cat "$msg_file" 2>/dev/null | head -n 1)" in
+  fixup\!\ *|squash\!\ *|Merge\ *|Revert\ *) exit 0 ;;
+esac
+
+if ! git interpret-trailers --parse "$msg_file" | grep -q '^Mycelium-Agent:'; then
+  echo "ERROR: commit is missing 'Mycelium-Agent:' trailer." >&2
+  echo "Add at the end of the commit message:" >&2
+  echo "  Mycelium-Agent: <name>"         >&2
+  echo "  Mycelium-Dept: <dept>"          >&2
+  echo "  Mycelium-Phase: primary|critique|refined|pm_review|qa_gate" >&2
+  echo "  Mycelium-Rationale: one-liner"  >&2
+  echo "Or skip once with: GRIDLAND_SKIP_MYCELIUM=1 git commit ..." >&2
+  exit 1
+fi
+
+if ! git interpret-trailers --parse "$msg_file" | grep -q '^Mycelium-Phase:'; then
+  echo "ERROR: commit is missing 'Mycelium-Phase:' trailer." >&2
+  exit 1
+fi

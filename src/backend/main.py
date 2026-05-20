@@ -12,6 +12,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from backend import __version__
 from backend.api import context as context_routes
 from backend.api import discovery as discovery_routes
+from backend.api import photosphere as photosphere_routes
 from backend.api import realtime as realtime_routes
 from backend.settings import get_settings
 
@@ -35,6 +36,7 @@ def create_app() -> FastAPI:
     )
     app.include_router(discovery_routes.router)
     app.include_router(context_routes.router)
+    app.include_router(photosphere_routes.router)
     app.include_router(realtime_routes.router)
 
     @app.get("/health", tags=["meta"])

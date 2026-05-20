@@ -4,16 +4,21 @@ Public infrastructure visibility platform — a CesiumJS 3D globe over a FastAPI
 
 ## Status
 
-v0.1 — working baseline. Implemented sources:
+v0.2 — Implemented sources:
 
-| Layer       | Source       | Auth | Module |
-|-------------|--------------|------|--------|
-| Discovery   | OSM Overpass | none | `backend.discovery.sources.osm` |
-| Realtime    | ADSB.fi      | none | `backend.pipeline.sources.adsb_fi` |
-| Context     | NWS          | none | `backend.context.sources.nws` |
-| Context     | Wikipedia    | none | `backend.context.sources.wikipedia` |
+| Layer       | Source       | Auth | Module | Publication |
+|-------------|--------------|------|--------|-------------|
+| Discovery   | OSM Overpass             | none | `backend.discovery.sources.osm`        | directory_listed |
+| Discovery   | Caltrans CCTV (12 districts) | none | `backend.discovery.sources.caltrans`  | operator_published |
+| Discovery   | WSDOT HighwayCameras     | free key (`WSDOT_API_KEY`) | `backend.discovery.sources.wsdot`     | operator_published |
+| Discovery   | 511NY (NYSDOT)           | free key (`N511NY_API_KEY`) | `backend.discovery.sources.n511ny`   | operator_published |
+| Discovery   | LiveCam Registry (NPS, USGS, Cornell, Explore, Smithsonian, MBA) | none | `backend.discovery.sources.livecams` | operator_published |
+| Photosphere | Mapillary v4 (panos near point) | free key (`MAPILLARY_API_KEY`) | `backend.discovery.sources.mapillary` | operator_published |
+| Realtime    | ADSB.fi                  | none | `backend.pipeline.sources.adsb_fi`     | n/a |
+| Context     | NWS forecast + alerts    | none | `backend.context.sources.nws`          | n/a |
+| Context     | Wikipedia GeoSearch      | none | `backend.context.sources.wikipedia`    | n/a |
 
-Additional sources (FCC ASR, Mapillary, GreyNoise, ARIN RDAP, Celestrak, NASA FIRMS, Transitland, AISHub, Blitzortung) have technical references in `docs/GRIDLAND-5.md` through `docs/GRIDLAND-8.md` and are unimplemented placeholders for the same source-and-normalize pattern used by the modules listed above.
+Sources that require a free API key self-skip (return `[]`) when the key isn't set, so the system runs out of the box with no keys configured. Add keys in `.env` (see `config/.env.example`) to light them up.
 
 ## Quick start
 
@@ -36,9 +41,10 @@ docker compose up --build
 | Method | Path | Params | Returns |
 |--------|------|--------|---------|
 | GET | `/health` | — | `{ "status": "ok", "version": "..." }` |
-| GET | `/api/discover` | `lat`, `lon`, `radius_km` | `DiscoveryResponse` |
-| GET | `/api/context` | `lat`, `lon` | `ContextBundle` |
-| WS  | `/ws/live` | subscribe with `{lat, lon, distance_nm}` | aircraft frames every `realtime_poll_interval_s` |
+| GET | `/api/discover` | `lat`, `lon`, `radius_km` | `DiscoveryResponse` (CameraResult list across all 5 sources) |
+| GET | `/api/context` | `lat`, `lon` | `ContextBundle` (NWS + Wikipedia gathered in parallel) |
+| GET | `/api/photospheres` | `lat`, `lon`, `radius_m`, `limit` | `{ items: [...] }` (Mapillary panos; empty without key) |
+| WS  | `/ws/live` | subscribe with `{lat, lon, distance_nm}` | first frame `kind:"snapshot"`, subsequent `kind:"diff"` (added/updated/removed by `icao24`) |
 
 ## Compliance
 
@@ -49,8 +55,22 @@ Enforced by `backend.compliance.guardrails` and tested in `tests/test_compliance
 3. Drop sources whose ARIN org label matches residential ISP patterns.
 4. Every `CameraResult` with a `thumbnail_url` must declare `blur_required: bool`.
 5. Every record carries `fetched_at` (ISO 8601, UTC).
+6. Every `CameraResult` carries a `publication_status`: `operator_published`, `directory_listed`, or `crowdsourced` — provenance attached to every output row.
 
 Compliance is applied as a final gate in `backend.discovery.service.search_area`.
+
+## Caching
+
+`backend.shared.cache.TTLCache` provides single-flight (stampede-protected) per-URL caching. Per-source TTLs are configurable in `backend.settings`:
+
+| Source | Default TTL |
+|--------|-------------|
+| Overpass            | 5 min  |
+| DOT JSON (Caltrans/WSDOT/511NY) | 1 min  |
+| NWS forecast        | 15 min |
+| NWS alerts          | 1 min  |
+| Wikipedia GeoSearch | 1 h    |
+| Mapillary panos     | 10 min |
 
 ## Configuration
 

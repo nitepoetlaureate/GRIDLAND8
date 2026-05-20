@@ -2,21 +2,38 @@
 
 See `README.md` for setup and architecture. This file documents the conventions any agent must follow when editing the repository.
 
-## Mycelium change log
+## Mycelium v3 — automatic via git trailers
 
-Every file creation or modification is recorded in `.mycelium/log.json` (machine) and `.mycelium/CHANGELOG.md` (human) by running:
+Every commit must include Mycelium-* trailers in its message. The `commit-msg` git hook rejects commits without `Mycelium-Agent` and `Mycelium-Phase`. The `post-commit` hook reads the trailers and automatically appends one `.mycelium/log.json` entry per file touched in the commit. `CHANGELOG.md` is regenerated from the log.
 
-```bash
-python3 .mycelium/record.py \
-  --agent <name> \
-  --phase primary|critique|refined|pm_review|qa_gate \
-  --file <path> \
-  --action created|modified|reviewed|verified \
-  --rationale "what changed and why" \
-  --department discovery|visualization|pipeline|context|quality|none
+Required trailers:
+
+```
+Mycelium-Agent: <name>
+Mycelium-Dept:  discovery|visualization|pipeline|context|quality|none
+Mycelium-Phase: primary|critique|refined|pm_review|qa_gate
+Mycelium-Rationale: one or two lines explaining the why
 ```
 
-The fields `--agent`, `--phase`, `--file`, `--action`, and `--rationale` are required. The script is the single source of truth for change history; do not edit `log.json` by hand.
+Optional:
+
+```
+Mycelium-Action:      created|modified|archived|reviewed|verified   (default inferred from diff)
+Mycelium-Critique-Of: myc_<id>                                       (for critic commits)
+```
+
+Install the hooks once per checkout: `make install-hooks` (also runs as part of `make setup`).
+
+Bypass the hooks once (e.g., during an interactive rebase) with `GRIDLAND_SKIP_MYCELIUM=1 git ...`.
+
+Manual single-file entries still work for ad-hoc cases:
+
+```bash
+python3 .mycelium/record.py --agent <name> --phase primary --file <path> \
+  --action modified --rationale "..." --department <dept>
+```
+
+The `pre-push` hook blocks pushes to `main` that contain commits without `Mycelium-Agent` trailers.
 
 ## Conventions
 

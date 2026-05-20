@@ -4,6 +4,7 @@ import { CameraLayer } from "./entities/cameras.js";
 import { AircraftLayer } from "./entities/aircraft.js";
 import { discover, context, health } from "./api.js";
 import { LiveSocket, liveUrl } from "./ws.js";
+import { PhotosphereTransition } from "./photosphere/transition.js";
 
 const $ = (id) => document.getElementById(id);
 
@@ -70,7 +71,7 @@ async function bootstrap() {
       distance_nm: 250,
     },
     onMessage: (frame) => {
-      if (frame.type === "aircraft") aircraft.update(frame);
+      if (frame.type === "aircraft") aircraft.handleFrame(frame);
     },
     onStatus: (s) => {
       const map = { connecting: "live: connecting", open: "live: streaming",
@@ -80,6 +81,9 @@ async function bootstrap() {
     },
   });
   live.connect();
+
+  const photosphere = new PhotosphereTransition(viewer);
+  photosphere.start();
 
   async function scan() {
     const lat = parseFloat($("lat").value);

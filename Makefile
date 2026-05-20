@@ -1,12 +1,15 @@
-.PHONY: setup test backend frontend docker clean
+.PHONY: setup test backend frontend docker clean install-hooks
 
 PYTHON ?= python3
 PIP    ?= pip
 
-setup:
+setup: install-hooks
 	$(PYTHON) -m venv .venv
 	. .venv/bin/activate && pip install --upgrade pip && pip install -r requirements.txt
 	npm install
+
+install-hooks:
+	bash scripts/install-hooks.sh
 
 test:
 	. .venv/bin/activate && PYTHONPATH=src pytest -q

@@ -1,4 +1,4 @@
-"""Shared async HTTP client with timeout, retry, and a fixed User-Agent."""
+"""Shared async HTTP with timeout, retry, fixed User-Agent, and TTL cache."""
 from __future__ import annotations
 
 import asyncio
@@ -9,9 +9,13 @@ from typing import Any, AsyncIterator
 import httpx
 
 from backend.settings import get_settings
+from backend.shared.cache import default_cache, make_key
 from backend.shared.constants import USER_AGENT
 
 log = logging.getLogger(__name__)
+
+# Sentinel: ttl_s=0 disables caching for this call (default).
+NO_CACHE = 0.0
 
 
 def _client_kwargs() -> dict[str, Any]:
@@ -29,13 +33,7 @@ async def client() -> AsyncIterator[httpx.AsyncClient]:
         yield c
 
 
-async def get_json(url: str, *, params: dict | None = None,
-                   headers: dict | None = None) -> Any:
-    """GET a URL and return parsed JSON. Retries on transient failures.
-
-    Returns None on permanent failure. Never raises to callers; sources must
-    degrade gracefully when an upstream is down.
-    """
+async def _do_get(url: str, params: dict | None, headers: dict | None) -> Any:
     s = get_settings()
     last_exc: Exception | None = None
     for attempt in range(s.http_retries + 1):
@@ -53,13 +51,12 @@ async def get_json(url: str, *, params: dict | None = None,
             last_exc = e
             log.warning("GET %s failed (attempt %d): %s", url, attempt + 1, e)
             await asyncio.sleep(min(2 ** attempt, 4))
-    log.error("GET %s gave up after %d attempts: %s", url, s.http_retries + 1, last_exc)
+    log.error("GET %s gave up: %s", url, last_exc)
     return None
 
 
-async def post_json(url: str, *, data: str | None = None, params: dict | None = None,
-                    headers: dict | None = None) -> Any:
-    """POST a body and return parsed JSON. Used for Overpass query language."""
+async def _do_post(url: str, data: str | None, params: dict | None,
+                   headers: dict | None) -> Any:
     s = get_settings()
     last_exc: Exception | None = None
     for attempt in range(s.http_retries + 1):
@@ -77,8 +74,31 @@ async def post_json(url: str, *, data: str | None = None, params: dict | None = 
             last_exc = e
             log.warning("POST %s failed (attempt %d): %s", url, attempt + 1, e)
             await asyncio.sleep(min(2 ** attempt, 4))
-    log.error("POST %s gave up after %d attempts: %s", url, s.http_retries + 1, last_exc)
+    log.error("POST %s gave up: %s", url, last_exc)
     return None
+
+
+async def get_json(url: str, *, params: dict | None = None,
+                   headers: dict | None = None, ttl_s: float = NO_CACHE) -> Any:
+    """GET parsed JSON. If ttl_s > 0, cache successful responses.
+
+    Failures are not cached. Callers may pass ttl_s to opt in.
+    """
+    if ttl_s <= 0:
+        return await _do_get(url, params, headers)
+    cache = default_cache()
+    key = make_key("GET", url, params=params)
+    return await cache.get_or_fetch(key, ttl_s, lambda: _do_get(url, params, headers))
+
+
+async def post_json(url: str, *, data: str | None = None, params: dict | None = None,
+                    headers: dict | None = None, ttl_s: float = NO_CACHE) -> Any:
+    if ttl_s <= 0:
+        return await _do_post(url, data, params, headers)
+    cache = default_cache()
+    key = make_key("POST", url, params=params, body=data)
+    return await cache.get_or_fetch(key, ttl_s,
+                                     lambda: _do_post(url, data, params, headers))
 
 
 def utc_now_iso() -> str:

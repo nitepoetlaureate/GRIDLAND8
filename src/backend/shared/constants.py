@@ -13,6 +13,15 @@ SRC_OSM = "osm"
 SRC_FCC = "fcc"
 SRC_MAPILLARY = "mapillary"
 SRC_CRTSH = "crtsh"
+SRC_CALTRANS = "caltrans"
+SRC_WSDOT = "wsdot"
+SRC_N511NY = "n511ny"
+SRC_LIVECAM = "livecam"
+
+# Publication status of a result's underlying source
+PUB_OPERATOR_PUBLISHED = "operator_published"
+PUB_DIRECTORY_LISTED = "directory_listed"
+PUB_CROWDSOURCED = "crowdsourced"
 
 # Normalized response field names
 F_ID = "id"

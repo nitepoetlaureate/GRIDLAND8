@@ -1,0 +1,11 @@
+#!/usr/bin/env bash
+# Auto-record a Mycelium entry for the just-made commit by reading its
+# Mycelium-* trailers and the diff.
+set -e
+
+if [[ "${GRIDLAND_SKIP_MYCELIUM:-0}" == "1" ]]; then
+  exit 0
+fi
+
+sha=$(git rev-parse HEAD)
+python3 .mycelium/record.py from-commit "$sha" || true

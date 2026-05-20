@@ -1,10 +1,9 @@
-"""WebSocket endpoint for real-time aircraft (and future entity) broadcasts.
-
-Wire protocol — each frame is a JSON envelope:
-  {"type": "aircraft", "ts": "...", "query": {...}, "count": N, "items": [...]}
+"""WebSocket endpoint for real-time aircraft (snapshot/diff broadcasts).
 
 Client sends an initial JSON message to subscribe:
   {"lat": 39.95, "lon": -75.16, "distance_nm": 250}
+
+First server frame is a `kind: "snapshot"`. Subsequent frames are `kind: "diff"`.
 """
 from __future__ import annotations
 
@@ -15,6 +14,7 @@ from typing import Any
 
 from fastapi import APIRouter, WebSocket, WebSocketDisconnect
 
+from backend.pipeline.diff import AircraftDiffer
 from backend.pipeline.service import aircraft_snapshot
 from backend.settings import get_settings
 
@@ -23,8 +23,6 @@ router = APIRouter()
 
 
 class _Hub:
-    """Tracks active clients and enforces max_ws_clients."""
-
     def __init__(self, limit: int) -> None:
         self._clients: set[WebSocket] = set()
         self._limit = limit
@@ -55,15 +53,18 @@ def get_hub() -> _Hub:
     return _hub
 
 
-async def _stream_aircraft(ws: WebSocket, lat: float, lon: float, distance_nm: int) -> None:
+async def _stream_aircraft(ws: WebSocket, lat: float, lon: float,
+                           distance_nm: int) -> None:
     interval = get_settings().realtime_poll_interval_s
+    differ = AircraftDiffer()
     while True:
         try:
             snap = await aircraft_snapshot(lat, lon, distance_nm)
-            await ws.send_text(json.dumps(snap))
+            frame = differ.next_frame(snap["items"], snap["ts"])
+            await ws.send_text(json.dumps(frame))
         except (WebSocketDisconnect, RuntimeError):
             return
-        except Exception as e:  # noqa: BLE001 - log and continue
+        except Exception as e:  # noqa: BLE001
             log.exception("snapshot loop error: %s", e)
         await asyncio.sleep(interval)
 

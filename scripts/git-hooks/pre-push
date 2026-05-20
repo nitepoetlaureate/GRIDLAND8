@@ -1,0 +1,38 @@
+#!/usr/bin/env bash
+# Refuse to push commits on `main` that lack Mycelium-* trailers. Other
+# branches are warned but allowed (so feature work can be batched first).
+set -e
+
+if [[ "${GRIDLAND_SKIP_MYCELIUM:-0}" == "1" ]]; then
+  exit 0
+fi
+
+remote="$1"
+url="$2"
+
+while read -r local_ref local_sha remote_ref remote_sha; do
+  if [[ "$local_sha" == "0000000000000000000000000000000000000000" ]]; then
+    continue
+  fi
+  if [[ "$remote_ref" != "refs/heads/main" ]]; then
+    continue
+  fi
+  if [[ "$remote_sha" == "0000000000000000000000000000000000000000" ]]; then
+    range="$local_sha"
+  else
+    range="${remote_sha}..${local_sha}"
+  fi
+  missing=0
+  for sha in $(git rev-list "$range"); do
+    if ! git show -s --format="%(trailers:key=Mycelium-Agent,valueonly)" "$sha" \
+         | grep -q .; then
+      echo "ERROR: commit $sha (on main) has no Mycelium-Agent trailer." >&2
+      missing=1
+    fi
+  done
+  if (( missing )); then
+    echo "Refusing to push. Add trailers, amend, and retry." >&2
+    echo "Bypass once with: GRIDLAND_SKIP_MYCELIUM=1 git push" >&2
+    exit 1
+  fi
+done

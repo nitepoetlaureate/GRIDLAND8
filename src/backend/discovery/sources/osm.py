@@ -10,7 +10,8 @@ import logging
 from typing import Iterable
 
 from backend.discovery.models import CameraResult
-from backend.shared.constants import SRC_OSM
+from backend.settings import get_settings
+from backend.shared.constants import PUB_DIRECTORY_LISTED, SRC_OSM
 from backend.shared.http import post_json, utc_now_iso
 
 log = logging.getLogger(__name__)
@@ -45,8 +46,9 @@ async def fetch_overpass(lat: float, lon: float, radius_km: float) -> list[dict]
     bbox = _bbox_from(lat, lon, radius_km)
     body = _QUERY_TMPL.format(bbox=bbox)
     headers = {"Content-Type": "text/plain; charset=utf-8"}
+    ttl = get_settings().cache_ttl_overpass_s
     for url in OVERPASS_ENDPOINTS:
-        data = await post_json(url, data=body, headers=headers)
+        data = await post_json(url, data=body, headers=headers, ttl_s=ttl)
         if data and isinstance(data, dict) and "elements" in data:
             return data["elements"]
         log.warning("Overpass mirror %s returned no data, trying next", url)
@@ -86,12 +88,15 @@ def normalize(elements: Iterable[dict]) -> list[CameraResult]:
                 lat=float(lat),
                 lon=float(lon),
                 source=SRC_OSM,
+                publication_status=PUB_DIRECTORY_LISTED,
                 label=_label_from_tags(tags),
                 url=url,
                 thumbnail_url=None,
                 blur_required=True,
                 data_age_s=0,
                 fetched_at=now,
+                tags={k: str(v) for k, v in tags.items() if k in
+                      ("operator", "surveillance:type", "camera:type", "name")},
             )
         except Exception as e:  # pydantic validation error
             log.debug("dropping invalid OSM node %s: %s", node_id, e)

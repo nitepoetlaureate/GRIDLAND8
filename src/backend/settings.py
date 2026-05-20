@@ -21,6 +21,14 @@ class Settings(BaseSettings):
     http_timeout_s: float = 10.0
     http_retries: int = 2
 
+    # Cache TTLs (0 disables, callers may opt in per call)
+    cache_ttl_overpass_s: float = 300.0       # 5 min
+    cache_ttl_dot_s: float = 60.0             # 1 min
+    cache_ttl_nws_forecast_s: float = 900.0   # 15 min
+    cache_ttl_nws_alerts_s: float = 60.0      # 1 min
+    cache_ttl_wikipedia_s: float = 3600.0     # 1 h
+    cache_ttl_mapillary_s: float = 600.0      # 10 min
+
     default_lat: float = 39.9526
     default_lon: float = -75.1652
     default_radius_km: float = 25.0
@@ -29,7 +37,15 @@ class Settings(BaseSettings):
     realtime_poll_interval_s: float = 10.0
     realtime_aircraft_radius_nm: int = 250
 
+    # Discovery source toggles & districts
+    caltrans_districts: list[int] = Field(
+        default_factory=lambda: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]
+    )
+
+    # Free upstream API keys (sources skip themselves if a required key is unset)
     mapillary_api_key: str | None = None
+    wsdot_api_key: str | None = None
+    n511ny_api_key: str | None = None
     greynoise_api_key: str | None = None
     opensky_username: str | None = None
     opensky_password: str | None = None
@@ -48,3 +64,9 @@ def get_settings() -> Settings:
     if _settings is None:
         _settings = Settings()
     return _settings
+
+
+def reset_settings_cache() -> None:
+    """For tests: drop the memoized Settings so env changes take effect."""
+    global _settings
+    _settings = None
