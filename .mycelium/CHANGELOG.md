@@ -1,7 +1,6 @@
 # GRIDLAND Mycelium Changelog
 
-This file is automatically appended by .mycelium/record.py after every file modification.
-Format: timestamp — agent (phase) — filename — rationale
+Generated from .mycelium/log.json. Do not edit by hand.
 
 ---
 
@@ -253,4 +252,179 @@ Documents how to relocate ci.yml back to .github/workflows after granting workfl
 ### 2026-05-20T06:55:43.264593+00:00 — cursor-opus (qa_gate) — `.`
 **Entry ID:** myc_202605200655430049
 48/48 tests passing locally; vite build succeeds (Cesium assets emitted to dist/cesium 15M); FastAPI app imports and registers all 4 routes; initial commit 0a8b87a pushed to github.com/nitepoetlaureate/GRIDLAND8
+---
+
+### 2026-05-20T03:34:17-04:00 — cursor-opus (primary) — `record.py` [84e843e]
+**Entry ID:** myc_202605200734170050
+Expand to 5 new sources, add cache + WS diffing, upgrade Mycelium to auto-record via git trailers (the change that makes its own bookkeeping stop being voluntary)
+---
+
+### 2026-05-20T03:34:17-04:00 — cursor-opus (primary) — `CLAUDE.md` [84e843e]
+**Entry ID:** myc_202605200734170051
+Expand to 5 new sources, add cache + WS diffing, upgrade Mycelium to auto-record via git trailers (the change that makes its own bookkeeping stop being voluntary)
+---
+
+### 2026-05-20T03:34:17-04:00 — cursor-opus (primary) — `Makefile` [84e843e]
+**Entry ID:** myc_202605200734170052
+Expand to 5 new sources, add cache + WS diffing, upgrade Mycelium to auto-record via git trailers (the change that makes its own bookkeeping stop being voluntary)
+---
+
+### 2026-05-20T03:34:17-04:00 — cursor-opus (primary) — `README.md` [84e843e]
+**Entry ID:** myc_202605200734170053
+Expand to 5 new sources, add cache + WS diffing, upgrade Mycelium to auto-record via git trailers (the change that makes its own bookkeeping stop being voluntary)
+---
+
+### 2026-05-20T03:34:17-04:00 — cursor-opus (primary) — `.env.example` [84e843e]
+**Entry ID:** myc_202605200734170054
+Expand to 5 new sources, add cache + WS diffing, upgrade Mycelium to auto-record via git trailers (the change that makes its own bookkeeping stop being voluntary)
+---
+
+### 2026-05-20T03:34:17-04:00 — cursor-opus (primary) — `package-lock.json` [84e843e]
+**Entry ID:** myc_202605200734170055
+Expand to 5 new sources, add cache + WS diffing, upgrade Mycelium to auto-record via git trailers (the change that makes its own bookkeeping stop being voluntary)
+---
+
+### 2026-05-20T03:34:17-04:00 — cursor-opus (primary) — `package.json` [84e843e]
+**Entry ID:** myc_202605200734170056
+Expand to 5 new sources, add cache + WS diffing, upgrade Mycelium to auto-record via git trailers (the change that makes its own bookkeeping stop being voluntary)
+---
+
+### 2026-05-20T03:34:17-04:00 — cursor-opus (primary) — `commit-msg` [84e843e]
+**Entry ID:** myc_202605200734170057
+Expand to 5 new sources, add cache + WS diffing, upgrade Mycelium to auto-record via git trailers (the change that makes its own bookkeeping stop being voluntary)
+---
+
+### 2026-05-20T03:34:17-04:00 — cursor-opus (primary) — `post-commit` [84e843e]
+**Entry ID:** myc_202605200734170058
+Expand to 5 new sources, add cache + WS diffing, upgrade Mycelium to auto-record via git trailers (the change that makes its own bookkeeping stop being voluntary)
+---
+
+### 2026-05-20T03:34:17-04:00 — cursor-opus (primary) — `pre-push` [84e843e]
+**Entry ID:** myc_202605200734170059
+Expand to 5 new sources, add cache + WS diffing, upgrade Mycelium to auto-record via git trailers (the change that makes its own bookkeeping stop being voluntary)
+---
+
+### 2026-05-20T03:34:17-04:00 — cursor-opus (primary) — `install-hooks.sh` [84e843e]
+**Entry ID:** myc_202605200734170060
+Expand to 5 new sources, add cache + WS diffing, upgrade Mycelium to auto-record via git trailers (the change that makes its own bookkeeping stop being voluntary)
+---
+
+### 2026-05-20T03:34:17-04:00 — cursor-opus (primary) — `photosphere.py` [84e843e]
+**Entry ID:** myc_202605200734170061
+Expand to 5 new sources, add cache + WS diffing, upgrade Mycelium to auto-record via git trailers (the change that makes its own bookkeeping stop being voluntary)
+---
+
+### 2026-05-20T03:34:17-04:00 — cursor-opus (primary) — `realtime.py` [84e843e]
+**Entry ID:** myc_202605200734170062
+Expand to 5 new sources, add cache + WS diffing, upgrade Mycelium to auto-record via git trailers (the change that makes its own bookkeeping stop being voluntary)
+---
+
+### 2026-05-20T03:34:17-04:00 — cursor-opus (primary) — `models.py` [84e843e]
+**Entry ID:** myc_202605200734170063
+Expand to 5 new sources, add cache + WS diffing, upgrade Mycelium to auto-record via git trailers (the change that makes its own bookkeeping stop being voluntary)
+---
+
+### 2026-05-20T03:34:17-04:00 — cursor-opus (primary) — `service.py` [84e843e]
+**Entry ID:** myc_202605200734170064
+Expand to 5 new sources, add cache + WS diffing, upgrade Mycelium to auto-record via git trailers (the change that makes its own bookkeeping stop being voluntary)
+---
+
+### 2026-05-20T03:34:17-04:00 — cursor-opus (primary) — `caltrans.py` [84e843e]
+**Entry ID:** myc_202605200734170065
+Expand to 5 new sources, add cache + WS diffing, upgrade Mycelium to auto-record via git trailers (the change that makes its own bookkeeping stop being voluntary)
+---
+
+### 2026-05-20T03:34:17-04:00 — cursor-opus (primary) — `livecams.py` [84e843e]
+**Entry ID:** myc_202605200734170066
+Expand to 5 new sources, add cache + WS diffing, upgrade Mycelium to auto-record via git trailers (the change that makes its own bookkeeping stop being voluntary)
+---
+
+### 2026-05-20T03:34:17-04:00 — cursor-opus (primary) — `mapillary.py` [84e843e]
+**Entry ID:** myc_202605200734170067
+Expand to 5 new sources, add cache + WS diffing, upgrade Mycelium to auto-record via git trailers (the change that makes its own bookkeeping stop being voluntary)
+---
+
+### 2026-05-20T03:34:17-04:00 — cursor-opus (primary) — `n511ny.py` [84e843e]
+**Entry ID:** myc_202605200734170068
+Expand to 5 new sources, add cache + WS diffing, upgrade Mycelium to auto-record via git trailers (the change that makes its own bookkeeping stop being voluntary)
+---
+
+### 2026-05-20T03:34:17-04:00 — cursor-opus (primary) — `osm.py` [84e843e]
+**Entry ID:** myc_202605200734170069
+Expand to 5 new sources, add cache + WS diffing, upgrade Mycelium to auto-record via git trailers (the change that makes its own bookkeeping stop being voluntary)
+---
+
+### 2026-05-20T03:34:17-04:00 — cursor-opus (primary) — `wsdot.py` [84e843e]
+**Entry ID:** myc_202605200734170070
+Expand to 5 new sources, add cache + WS diffing, upgrade Mycelium to auto-record via git trailers (the change that makes its own bookkeeping stop being voluntary)
+---
+
+### 2026-05-20T03:34:17-04:00 — cursor-opus (primary) — `main.py` [84e843e]
+**Entry ID:** myc_202605200734170071
+Expand to 5 new sources, add cache + WS diffing, upgrade Mycelium to auto-record via git trailers (the change that makes its own bookkeeping stop being voluntary)
+---
+
+### 2026-05-20T03:34:17-04:00 — cursor-opus (primary) — `diff.py` [84e843e]
+**Entry ID:** myc_202605200734170072
+Expand to 5 new sources, add cache + WS diffing, upgrade Mycelium to auto-record via git trailers (the change that makes its own bookkeeping stop being voluntary)
+---
+
+### 2026-05-20T03:34:17-04:00 — cursor-opus (primary) — `settings.py` [84e843e]
+**Entry ID:** myc_202605200734170073
+Expand to 5 new sources, add cache + WS diffing, upgrade Mycelium to auto-record via git trailers (the change that makes its own bookkeeping stop being voluntary)
+---
+
+### 2026-05-20T03:34:17-04:00 — cursor-opus (primary) — `cache.py` [84e843e]
+**Entry ID:** myc_202605200734170074
+Expand to 5 new sources, add cache + WS diffing, upgrade Mycelium to auto-record via git trailers (the change that makes its own bookkeeping stop being voluntary)
+---
+
+### 2026-05-20T03:34:17-04:00 — cursor-opus (primary) — `constants.py` [84e843e]
+**Entry ID:** myc_202605200734170075
+Expand to 5 new sources, add cache + WS diffing, upgrade Mycelium to auto-record via git trailers (the change that makes its own bookkeeping stop being voluntary)
+---
+
+### 2026-05-20T03:34:17-04:00 — cursor-opus (primary) — `http.py` [84e843e]
+**Entry ID:** myc_202605200734170076
+Expand to 5 new sources, add cache + WS diffing, upgrade Mycelium to auto-record via git trailers (the change that makes its own bookkeeping stop being voluntary)
+---
+
+### 2026-05-20T03:34:17-04:00 — cursor-opus (primary) — `aircraft.js` [84e843e]
+**Entry ID:** myc_202605200734170077
+Expand to 5 new sources, add cache + WS diffing, upgrade Mycelium to auto-record via git trailers (the change that makes its own bookkeeping stop being voluntary)
+---
+
+### 2026-05-20T03:34:17-04:00 — cursor-opus (primary) — `main.js` [84e843e]
+**Entry ID:** myc_202605200734170078
+Expand to 5 new sources, add cache + WS diffing, upgrade Mycelium to auto-record via git trailers (the change that makes its own bookkeeping stop being voluntary)
+---
+
+### 2026-05-20T03:34:17-04:00 — cursor-opus (primary) — `transition.js` [84e843e]
+**Entry ID:** myc_202605200734170079
+Expand to 5 new sources, add cache + WS diffing, upgrade Mycelium to auto-record via git trailers (the change that makes its own bookkeeping stop being voluntary)
+---
+
+### 2026-05-20T03:34:17-04:00 — cursor-opus (primary) — `test_discovery_dot.py` [84e843e]
+**Entry ID:** myc_202605200734170080
+Expand to 5 new sources, add cache + WS diffing, upgrade Mycelium to auto-record via git trailers (the change that makes its own bookkeeping stop being voluntary)
+---
+
+### 2026-05-20T03:34:17-04:00 — cursor-opus (primary) — `test_http_cache.py` [84e843e]
+**Entry ID:** myc_202605200734170081
+Expand to 5 new sources, add cache + WS diffing, upgrade Mycelium to auto-record via git trailers (the change that makes its own bookkeeping stop being voluntary)
+---
+
+### 2026-05-20T03:34:17-04:00 — cursor-opus (primary) — `test_mapillary.py` [84e843e]
+**Entry ID:** myc_202605200734170082
+Expand to 5 new sources, add cache + WS diffing, upgrade Mycelium to auto-record via git trailers (the change that makes its own bookkeeping stop being voluntary)
+---
+
+### 2026-05-20T03:34:17-04:00 — cursor-opus (primary) — `test_mycelium_trailers.py` [84e843e]
+**Entry ID:** myc_202605200734170083
+Expand to 5 new sources, add cache + WS diffing, upgrade Mycelium to auto-record via git trailers (the change that makes its own bookkeeping stop being voluntary)
+---
+
+### 2026-05-20T03:34:17-04:00 — cursor-opus (primary) — `test_pipeline_diff.py` [84e843e]
+**Entry ID:** myc_202605200734170084
+Expand to 5 new sources, add cache + WS diffing, upgrade Mycelium to auto-record via git trailers (the change that makes its own bookkeeping stop being voluntary)
 ---

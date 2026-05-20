@@ -21,7 +21,17 @@
           <button id="go">scan</button>
         </div>
         <div id="counts" class="counts"></div>
+        <fieldset class="layers">
+          <legend>Layers</legend>
+          <label><input type="checkbox" data-layer="cameras" checked /> Cameras</label>
+          <label><input type="checkbox" data-layer="aircraft" checked /> Aircraft</label>
+          <label><input type="checkbox" data-layer="satellites" /> Satellites (ISS+stations)</label>
+          <label><input type="checkbox" data-layer="gibs-truecolor" /> Clouds (MODIS true color)</label>
+          <label><input type="checkbox" data-layer="gibs-fires" /> Active fires (VIIRS)</label>
+          <label><input type="checkbox" data-layer="gibs-aerosol" /> Aerosol (MODIS AOD)</label>
+        </fieldset>
         <div id="context" class="context"></div>
+        <div id="whats-here" class="whats-here" hidden></div>
       </section>
     </div>
     <div id="cesium-container"></div>

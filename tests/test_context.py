@@ -92,6 +92,15 @@ async def test_wikipedia_nearby(monkeypatch):
     assert out[0]["url"].startswith("https://en.wikipedia.org/?curid=")
 
 
+def _stub_extra_sources(monkeypatch):
+    """Stub the non-NWS/non-Wikipedia sources so they don't hit the network."""
+    async def empty_list(*a, **k): return []
+    monkeypatch.setattr(ctx_service.usgs, "recent_quakes", empty_list)
+    monkeypatch.setattr(ctx_service.firms, "active_fires", empty_list)
+    monkeypatch.setattr(ctx_service.openaq, "nearby_aq", empty_list)
+    monkeypatch.setattr(ctx_service.aviation, "metars", empty_list)
+
+
 @pytest.mark.asyncio
 async def test_context_service_aggregates(monkeypatch):
     async def fake_forecast(lat, lon): return {"now": "Cloudy"}
@@ -101,10 +110,15 @@ async def test_context_service_aggregates(monkeypatch):
     monkeypatch.setattr(ctx_service.nws, "forecast", fake_forecast)
     monkeypatch.setattr(ctx_service.nws, "active_alerts", fake_alerts)
     monkeypatch.setattr(ctx_service.wikipedia, "nearby", fake_wiki)
+    _stub_extra_sources(monkeypatch)
     bundle = await ctx_service.gather(39.95, -75.16)
     assert bundle.weather == {"now": "Cloudy"}
     assert len(bundle.alerts) == 1
     assert len(bundle.wikipedia) == 1
+    assert bundle.quakes == []
+    assert bundle.fires == []
+    assert bundle.air_quality == []
+    assert bundle.metars == []
     assert not bundle.errors
 
 
@@ -116,6 +130,7 @@ async def test_context_service_isolates_failures(monkeypatch):
     monkeypatch.setattr(ctx_service.nws, "forecast", boom)
     monkeypatch.setattr(ctx_service.nws, "active_alerts", boom)
     monkeypatch.setattr(ctx_service.wikipedia, "nearby", fake_wiki)
+    _stub_extra_sources(monkeypatch)
     bundle = await ctx_service.gather(39.95, -75.16)
     assert bundle.weather is None
     assert bundle.alerts == []

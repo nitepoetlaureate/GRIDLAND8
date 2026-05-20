@@ -41,4 +41,8 @@ export class CameraLayer {
     this.clear();
     for (const r of results) this.add(r);
   }
+
+  setVisible(visible) {
+    this.collection.show = visible;
+  }
 }

@@ -4,7 +4,7 @@ Public infrastructure visibility platform — a CesiumJS 3D globe over a FastAPI
 
 ## Status
 
-v0.2 — Implemented sources:
+v0.3 — Implemented sources:
 
 | Layer       | Source       | Auth | Module | Publication |
 |-------------|--------------|------|--------|-------------|
@@ -14,9 +14,15 @@ v0.2 — Implemented sources:
 | Discovery   | 511NY (NYSDOT)           | free key (`N511NY_API_KEY`) | `backend.discovery.sources.n511ny`   | operator_published |
 | Discovery   | LiveCam Registry (NPS, USGS, Cornell, Explore, Smithsonian, MBA) | none | `backend.discovery.sources.livecams` | operator_published |
 | Photosphere | Mapillary v4 (panos near point) | free key (`MAPILLARY_API_KEY`) | `backend.discovery.sources.mapillary` | operator_published |
-| Realtime    | ADSB.fi                  | none | `backend.pipeline.sources.adsb_fi`     | n/a |
+| Realtime    | ADSB.fi (aircraft)       | none | `backend.pipeline.sources.adsb_fi`     | n/a |
+| Realtime    | Celestrak (satellite TLE; client-side SGP4) | none | `backend.pipeline.sources.celestrak` | n/a |
 | Context     | NWS forecast + alerts    | none | `backend.context.sources.nws`          | n/a |
 | Context     | Wikipedia GeoSearch      | none | `backend.context.sources.wikipedia`    | n/a |
+| Context     | USGS Earthquakes (FDSN)  | none | `backend.context.sources.usgs`         | n/a |
+| Context     | NASA FIRMS (active fires) | free key (`NASA_FIRMS_MAP_KEY`) | `backend.context.sources.firms`     | n/a |
+| Context     | OpenAQ v3 (air quality)  | free key (`OPENAQ_API_KEY`) | `backend.context.sources.openaq`        | n/a |
+| Context     | aviationweather.gov METARs | none | `backend.context.sources.aviation`    | n/a |
+| Imagery     | NASA GIBS WMTS overlays (clouds / fires / AOD) | none | `src/frontend/cesium/gibs.js` | n/a |
 
 Sources that require a free API key self-skip (return `[]`) when the key isn't set, so the system runs out of the box with no keys configured. Add keys in `.env` (see `config/.env.example`) to light them up.
 
@@ -41,9 +47,12 @@ docker compose up --build
 | Method | Path | Params | Returns |
 |--------|------|--------|---------|
 | GET | `/health` | — | `{ "status": "ok", "version": "..." }` |
-| GET | `/api/discover` | `lat`, `lon`, `radius_km` | `DiscoveryResponse` (CameraResult list across all 5 sources) |
-| GET | `/api/context` | `lat`, `lon` | `ContextBundle` (NWS + Wikipedia gathered in parallel) |
+| GET | `/api/discover` | `lat`, `lon`, `radius_km` | `DiscoveryResponse` (CameraResult list across all 5 discovery sources) |
+| GET | `/api/context` | `lat`, `lon` | `ContextBundle` (NWS + Wikipedia + USGS quakes + FIRMS fires + OpenAQ + METARs) |
 | GET | `/api/photospheres` | `lat`, `lon`, `radius_m`, `limit` | `{ items: [...] }` (Mapillary panos; empty without key) |
+| GET | `/api/satellites` | `group`, `limit` | `{ items: [{name, line1, line2}, ...] }` (Celestrak TLEs; SGP4 happens client-side) |
+| GET | `/api/satellites/catalogs` | — | `{ catalogs: ["stations", "active", ...] }` |
+| GET | `/api/whats_here` | `lat`, `lon`, `radius_km`, `photosphere_radius_m` | aggregated cameras + context + photospheres at a point |
 | WS  | `/ws/live` | subscribe with `{lat, lon, distance_nm}` | first frame `kind:"snapshot"`, subsequent `kind:"diff"` (added/updated/removed by `icao24`) |
 
 ## Compliance
@@ -71,6 +80,11 @@ Compliance is applied as a final gate in `backend.discovery.service.search_area`
 | NWS alerts          | 1 min  |
 | Wikipedia GeoSearch | 1 h    |
 | Mapillary panos     | 10 min |
+| USGS quakes         | 5 min  |
+| NASA FIRMS fires    | 10 min |
+| OpenAQ v3           | 10 min |
+| METARs              | 5 min  |
+| Celestrak TLE       | 6 h    |
 
 ## Configuration
 

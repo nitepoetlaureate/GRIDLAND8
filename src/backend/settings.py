@@ -28,6 +28,11 @@ class Settings(BaseSettings):
     cache_ttl_nws_alerts_s: float = 60.0      # 1 min
     cache_ttl_wikipedia_s: float = 3600.0     # 1 h
     cache_ttl_mapillary_s: float = 600.0      # 10 min
+    cache_ttl_quakes_s: float = 300.0         # 5 min
+    cache_ttl_firms_s: float = 600.0          # 10 min
+    cache_ttl_openaq_s: float = 600.0         # 10 min
+    cache_ttl_metar_s: float = 300.0          # 5 min
+    cache_ttl_tle_s: float = 21600.0          # 6 h
 
     default_lat: float = 39.9526
     default_lon: float = -75.1652
@@ -52,8 +57,14 @@ class Settings(BaseSettings):
     aishub_username: str | None = None
     aprs_fi_api_key: str | None = None
     nasa_firms_map_key: str | None = None
+    openaq_api_key: str | None = None
     transitland_api_key: str | None = None
     mta_api_key: str | None = None
+
+    # Satellite catalogs exposed by /api/satellites
+    tle_catalogs: list[str] = Field(
+        default_factory=lambda: ["stations", "active", "weather", "geo", "starlink"]
+    )
 
 
 _settings: Settings | None = None

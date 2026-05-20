@@ -101,4 +101,8 @@ export class AircraftLayer {
   _labelText(ac) {
     return ac.callsign?.trim() || ac.icao24.toUpperCase();
   }
+
+  setVisible(visible) {
+    this.collection.show = visible;
+  }
 }
