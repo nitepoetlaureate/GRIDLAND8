@@ -13,15 +13,22 @@ v0.3 — Implemented sources:
 | Discovery   | WSDOT HighwayCameras     | free key (`WSDOT_API_KEY`) | `backend.discovery.sources.wsdot`     | operator_published |
 | Discovery   | 511NY (NYSDOT)           | free key (`N511NY_API_KEY`) | `backend.discovery.sources.n511ny`   | operator_published |
 | Discovery   | LiveCam Registry (NPS, USGS, Cornell, Explore, Smithsonian, MBA) | none | `backend.discovery.sources.livecams` | operator_published |
+| Discovery   | NYC TMC traffic cameras (~948, all five boroughs) | none | `backend.discovery.sources.nyctmc` | operator_published |
+| Discovery   | Castle Rock 511 (511 Ontario ~928, 511 Alberta ~367, extensible) | none | `backend.discovery.sources.castlerock_511` | operator_published |
+| Discovery   | NPS Webcams (national park system) | free key (`NPS_API_KEY`) | `backend.discovery.sources.nps_webcams` | operator_published |
 | Photosphere | Mapillary v4 (panos near point) | free key (`MAPILLARY_API_KEY`) | `backend.discovery.sources.mapillary` | operator_published |
 | Realtime    | ADSB.fi (aircraft)       | none | `backend.pipeline.sources.adsb_fi`     | n/a |
 | Realtime    | Celestrak (satellite TLE; client-side SGP4) | none | `backend.pipeline.sources.celestrak` | n/a |
+| Realtime    | SEPTA TransitView + TrainView (Philly live transit) | none | `backend.pipeline.sources.septa_vehicles` | n/a |
 | Context     | NWS forecast + alerts    | none | `backend.context.sources.nws`          | n/a |
 | Context     | Wikipedia GeoSearch      | none | `backend.context.sources.wikipedia`    | n/a |
 | Context     | USGS Earthquakes (FDSN)  | none | `backend.context.sources.usgs`         | n/a |
 | Context     | NASA FIRMS (active fires) | free key (`NASA_FIRMS_MAP_KEY`) | `backend.context.sources.firms`     | n/a |
 | Context     | OpenAQ v3 (air quality)  | free key (`OPENAQ_API_KEY`) | `backend.context.sources.openaq`        | n/a |
 | Context     | aviationweather.gov METARs | none | `backend.context.sources.aviation`    | n/a |
+| Context     | SEPTA service alerts (Philly)  | none | `backend.context.sources.septa_alerts` | n/a |
+| Context     | Philadelphia 311 service requests | none | `backend.context.sources.philly311`    | n/a |
+| Context     | USGS Water Services (stream gauges) | none | `backend.context.sources.usgs_water`   | n/a |
 | Imagery     | NASA GIBS WMTS overlays (clouds / fires / AOD) | none | `src/frontend/cesium/gibs.js` | n/a |
 
 Sources that require a free API key self-skip (return `[]`) when the key isn't set, so the system runs out of the box with no keys configured. Add keys in `.env` (see `config/.env.example`) to light them up.
@@ -52,6 +59,7 @@ docker compose up --build
 | GET | `/api/photospheres` | `lat`, `lon`, `radius_m`, `limit` | `{ items: [...] }` (Mapillary panos; empty without key) |
 | GET | `/api/satellites` | `group`, `limit` | `{ items: [{name, line1, line2}, ...] }` (Celestrak TLEs; SGP4 happens client-side) |
 | GET | `/api/satellites/catalogs` | — | `{ catalogs: ["stations", "active", ...] }` |
+| GET | `/api/septa/vehicles` | — | `{ count, bus_trolley, regional_rail, vehicles: [...] }` (live SEPTA bus/trolley/rail positions) |
 | GET | `/api/whats_here` | `lat`, `lon`, `radius_km`, `photosphere_radius_m` | aggregated cameras + context + photospheres at a point |
 | WS  | `/ws/live` | subscribe with `{lat, lon, distance_nm}` | first frame `kind:"snapshot"`, subsequent `kind:"diff"` (added/updated/removed by `icao24`) |
 

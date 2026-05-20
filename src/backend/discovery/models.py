@@ -10,6 +10,7 @@ SourceName = Literal[
     "osm", "fcc", "mapillary", "crtsh",
     "caltrans", "wsdot", "n511ny",
     "livecam",
+    "nyctmc", "castlerock_511", "nps_webcams",
 ]
 
 PublicationStatus = Literal[

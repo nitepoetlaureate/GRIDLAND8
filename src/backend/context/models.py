@@ -13,5 +13,8 @@ class ContextBundle(BaseModel):
     fires: list[dict] = []
     air_quality: list[dict] = []
     metars: list[dict] = []
+    transit_alerts: list[dict] = []
+    service_requests: list[dict] = []
+    water_gauges: list[dict] = []
     fetched_at: str
     errors: dict[str, str] = {}

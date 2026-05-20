@@ -1,0 +1,126 @@
+/** SEPTA live-vehicle layer. Polls /api/septa/vehicles on an interval. */
+import * as Cesium from "cesium";
+
+const POLL_INTERVAL_MS = 15_000;
+
+function description(v) {
+  const rows = [
+    ["Mode", v.kind === "regional_rail" ? "Regional Rail" : "Bus/Trolley"],
+    ["Route", v.route || "—"],
+    ["Destination", v.destination || "—"],
+  ];
+  if (v.kind === "regional_rail") {
+    rows.push(["Train #", v.id?.replace?.("septa_train_", "") || "—"]);
+    rows.push(["Service", v.service || "—"]);
+    rows.push(["Current stop", v.current_stop || "—"]);
+    rows.push(["Next stop", v.next_stop || "—"]);
+    rows.push(["Track", v.track || "—"]);
+  } else {
+    rows.push(["Direction", v.direction || "—"]);
+    rows.push(["Next stop", v.next_stop || "—"]);
+    rows.push(["Seats", v.seat_availability || "—"]);
+  }
+  rows.push(["Late (min)", v.late_min ?? "—"]);
+  return `<table style="font:12px monospace">` +
+    rows.map(([k, val]) =>
+      `<tr><td style="padding-right:8px;color:#8b95a6">${k}</td><td>${val}</td></tr>`
+    ).join("") + `</table>`;
+}
+
+export class TransitLayer {
+  constructor(viewer) {
+    this.viewer = viewer;
+    this.dataSource = new Cesium.CustomDataSource("septa-transit");
+    viewer.dataSources.add(this.dataSource);
+    this.dataSource.show = false;
+    this._index = new Map();
+    this._timer = null;
+    this._enabled = false;
+  }
+
+  setVisible(visible) {
+    this.dataSource.show = visible;
+  }
+
+  async start() {
+    if (this._enabled) return;
+    this._enabled = true;
+    await this._refresh();
+    this._timer = setInterval(() => this._refresh(), POLL_INTERVAL_MS);
+  }
+
+  stop() {
+    this._enabled = false;
+    if (this._timer) {
+      clearInterval(this._timer);
+      this._timer = null;
+    }
+  }
+
+  async _refresh() {
+    let payload;
+    try {
+      const r = await fetch("/api/septa/vehicles");
+      if (!r.ok) return;
+      payload = await r.json();
+    } catch {
+      return;
+    }
+    const seen = new Set();
+    for (const v of payload.vehicles || []) {
+      seen.add(v.id);
+      const pos = Cesium.Cartesian3.fromDegrees(v.lon, v.lat, 0);
+      const existing = this._index.get(v.id);
+      if (existing) {
+        existing.position = pos;
+        existing.description = description(v);
+        existing.label.text = this._labelText(v);
+        existing.point.color = colorFor(v);
+      } else {
+        const entity = this.dataSource.entities.add({
+          name: this._labelText(v),
+          description: description(v),
+          position: pos,
+          point: {
+            pixelSize: 6,
+            color: colorFor(v),
+            outlineColor: Cesium.Color.BLACK,
+            outlineWidth: 1,
+            heightReference: Cesium.HeightReference.RELATIVE_TO_GROUND,
+          },
+          label: {
+            text: this._labelText(v),
+            font: "10px monospace",
+            fillColor: Cesium.Color.WHITE,
+            outlineColor: Cesium.Color.BLACK,
+            outlineWidth: 2,
+            style: Cesium.LabelStyle.FILL_AND_OUTLINE,
+            pixelOffset: new Cesium.Cartesian2(8, 0),
+            distanceDisplayCondition: new Cesium.DistanceDisplayCondition(0, 2e4),
+          },
+          properties: v,
+        });
+        this._index.set(v.id, entity);
+      }
+    }
+    for (const [id, entity] of [...this._index]) {
+      if (!seen.has(id)) {
+        this.dataSource.entities.remove(entity);
+        this._index.delete(id);
+      }
+    }
+  }
+
+  _labelText(v) {
+    return `${v.kind === "regional_rail" ? "🚆" : "🚌"} ${v.route}`;
+  }
+
+  count() {
+    return this._index.size;
+  }
+}
+
+function colorFor(v) {
+  if (v.kind === "regional_rail") return Cesium.Color.fromCssColorString("#41a8ff");
+  return Cesium.Color.fromCssColorString("#ff9c41");
+}

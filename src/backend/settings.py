@@ -33,6 +33,13 @@ class Settings(BaseSettings):
     cache_ttl_openaq_s: float = 600.0         # 10 min
     cache_ttl_metar_s: float = 300.0          # 5 min
     cache_ttl_tle_s: float = 21600.0          # 6 h
+    cache_ttl_septa_vehicles_s: float = 10.0  # 10 s (live transit)
+    cache_ttl_septa_alerts_s: float = 60.0    # 1 min
+    cache_ttl_phila311_s: float = 300.0       # 5 min
+    cache_ttl_usgs_water_s: float = 600.0     # 10 min
+    cache_ttl_nyctmc_s: float = 60.0          # 1 min (image refresh fast)
+    cache_ttl_cr511_s: float = 60.0           # 1 min
+    cache_ttl_nps_webcams_s: float = 3600.0   # 1 h (very rarely changes)
 
     default_lat: float = 39.9526
     default_lon: float = -75.1652
@@ -60,6 +67,7 @@ class Settings(BaseSettings):
     openaq_api_key: str | None = None
     transitland_api_key: str | None = None
     mta_api_key: str | None = None
+    nps_api_key: str | None = None
 
     # Satellite catalogs exposed by /api/satellites
     tle_catalogs: list[str] = Field(

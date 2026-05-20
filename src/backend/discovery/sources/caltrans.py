@@ -26,6 +26,10 @@ log = logging.getLogger(__name__)
 
 ENDPOINT = "https://cwwp2.dot.ca.gov/data/d{district}/cctv/cctvStatusD{district}.json"
 
+# California rough bounding box; queries outside the box skip Caltrans entirely.
+# Saves multi-second waste on retries to a CA-only service from non-CA queries.
+CA_BBOX = (32.5, -124.5, 42.0, -114.0)  # south, west, north, east
+
 
 def _in_bbox(lat: float, lon: float, c_lat: float, c_lon: float,
              dlat: float, dlon: float) -> bool:
@@ -90,7 +94,20 @@ def normalize(payload: dict, lat: float, lon: float, radius_km: float) -> list[C
     return results
 
 
+def _intersects_bbox(lat: float, lon: float, radius_km: float,
+                     bbox: tuple[float, float, float, float]) -> bool:
+    """True if the search circle could touch the source's coverage box."""
+    import math
+    s_lat, w_lon, n_lat, e_lon = bbox
+    dlat = radius_km / 111.0
+    dlon = radius_km / max(0.001, 111.0 * math.cos(math.radians(lat)))
+    return (lat + dlat) >= s_lat and (lat - dlat) <= n_lat \
+        and (lon + dlon) >= w_lon and (lon - dlon) <= e_lon
+
+
 async def search(lat: float, lon: float, radius_km: float) -> list[CameraResult]:
+    if not _intersects_bbox(lat, lon, radius_km, CA_BBOX):
+        return []
     s = get_settings()
     ttl = s.cache_ttl_dot_s
     coros = [

@@ -99,6 +99,9 @@ def _stub_extra_sources(monkeypatch):
     monkeypatch.setattr(ctx_service.firms, "active_fires", empty_list)
     monkeypatch.setattr(ctx_service.openaq, "nearby_aq", empty_list)
     monkeypatch.setattr(ctx_service.aviation, "metars", empty_list)
+    monkeypatch.setattr(ctx_service.septa_alerts, "near", empty_list)
+    monkeypatch.setattr(ctx_service.philly311, "recent", empty_list)
+    monkeypatch.setattr(ctx_service.usgs_water, "gauges_near", empty_list)
 
 
 @pytest.mark.asyncio

@@ -106,8 +106,9 @@ async def test_service_returns_compliant_results_only(monkeypatch):
         return _OVERPASS_OK["elements"]
     monkeypatch.setattr(osm, "fetch_overpass", fake_overpass)
     resp = await service.search_area(39.95, -75.16, 25)
-    assert resp.counts_by_source.get("osm", 0) == len(resp.results)
-    for r in resp.results:
+    osm_results = [r for r in resp.results if r.source == "osm"]
+    assert resp.counts_by_source.get("osm", 0) == len(osm_results)
+    for r in osm_results:
         assert "admin:admin" not in (r.url or "")
         assert r.blur_required is True
         assert r.fetched_at

@@ -428,3 +428,133 @@ Expand to 5 new sources, add cache + WS diffing, upgrade Mycelium to auto-record
 **Entry ID:** myc_202605200734170084
 Expand to 5 new sources, add cache + WS diffing, upgrade Mycelium to auto-record via git trailers (the change that makes its own bookkeeping stop being voluntary)
 ---
+
+### 2026-05-20T04:01:22-04:00 — claude-opus-4-7 (primary) — `CHANGELOG.md` [0397a64]
+**Entry ID:** myc_202605200801220085
+
+---
+
+### 2026-05-20T04:01:22-04:00 — claude-opus-4-7 (primary) — `log.json` [0397a64]
+**Entry ID:** myc_202605200801220086
+
+---
+
+### 2026-05-20T04:01:22-04:00 — claude-opus-4-7 (primary) — `README.md` [0397a64]
+**Entry ID:** myc_202605200801220087
+
+---
+
+### 2026-05-20T04:01:22-04:00 — claude-opus-4-7 (primary) — `index.html` [0397a64]
+**Entry ID:** myc_202605200801220088
+
+---
+
+### 2026-05-20T04:01:22-04:00 — claude-opus-4-7 (primary) — `satellites.py` [0397a64]
+**Entry ID:** myc_202605200801220089
+
+---
+
+### 2026-05-20T04:01:22-04:00 — claude-opus-4-7 (primary) — `whats_here.py` [0397a64]
+**Entry ID:** myc_202605200801220090
+
+---
+
+### 2026-05-20T04:01:22-04:00 — claude-opus-4-7 (primary) — `models.py` [0397a64]
+**Entry ID:** myc_202605200801220091
+
+---
+
+### 2026-05-20T04:01:22-04:00 — claude-opus-4-7 (primary) — `service.py` [0397a64]
+**Entry ID:** myc_202605200801220092
+
+---
+
+### 2026-05-20T04:01:22-04:00 — claude-opus-4-7 (primary) — `aviation.py` [0397a64]
+**Entry ID:** myc_202605200801220093
+
+---
+
+### 2026-05-20T04:01:22-04:00 — claude-opus-4-7 (primary) — `firms.py` [0397a64]
+**Entry ID:** myc_202605200801220094
+
+---
+
+### 2026-05-20T04:01:22-04:00 — claude-opus-4-7 (primary) — `openaq.py` [0397a64]
+**Entry ID:** myc_202605200801220095
+
+---
+
+### 2026-05-20T04:01:22-04:00 — claude-opus-4-7 (primary) — `usgs.py` [0397a64]
+**Entry ID:** myc_202605200801220096
+
+---
+
+### 2026-05-20T04:01:22-04:00 — claude-opus-4-7 (primary) — `main.py` [0397a64]
+**Entry ID:** myc_202605200801220097
+
+---
+
+### 2026-05-20T04:01:22-04:00 — claude-opus-4-7 (primary) — `celestrak.py` [0397a64]
+**Entry ID:** myc_202605200801220098
+
+---
+
+### 2026-05-20T04:01:22-04:00 — claude-opus-4-7 (primary) — `settings.py` [0397a64]
+**Entry ID:** myc_202605200801220099
+
+---
+
+### 2026-05-20T04:01:22-04:00 — claude-opus-4-7 (primary) — `api.js` [0397a64]
+**Entry ID:** myc_202605200801220100
+
+---
+
+### 2026-05-20T04:01:22-04:00 — claude-opus-4-7 (primary) — `gibs.js` [0397a64]
+**Entry ID:** myc_202605200801220101
+
+---
+
+### 2026-05-20T04:01:22-04:00 — claude-opus-4-7 (primary) — `aircraft.js` [0397a64]
+**Entry ID:** myc_202605200801220102
+
+---
+
+### 2026-05-20T04:01:22-04:00 — claude-opus-4-7 (primary) — `cameras.js` [0397a64]
+**Entry ID:** myc_202605200801220103
+
+---
+
+### 2026-05-20T04:01:22-04:00 — claude-opus-4-7 (primary) — `satellites.js` [0397a64]
+**Entry ID:** myc_202605200801220104
+
+---
+
+### 2026-05-20T04:01:22-04:00 — claude-opus-4-7 (primary) — `main.js` [0397a64]
+**Entry ID:** myc_202605200801220105
+
+---
+
+### 2026-05-20T04:01:22-04:00 — claude-opus-4-7 (primary) — `style.css` [0397a64]
+**Entry ID:** myc_202605200801220106
+
+---
+
+### 2026-05-20T04:01:22-04:00 — claude-opus-4-7 (primary) — `test_context.py` [0397a64]
+**Entry ID:** myc_202605200801220107
+
+---
+
+### 2026-05-20T04:01:22-04:00 — claude-opus-4-7 (primary) — `test_context_more.py` [0397a64]
+**Entry ID:** myc_202605200801220108
+
+---
+
+### 2026-05-20T04:01:22-04:00 — claude-opus-4-7 (primary) — `test_satellites.py` [0397a64]
+**Entry ID:** myc_202605200801220109
+
+---
+
+### 2026-05-20T04:01:22-04:00 — claude-opus-4-7 (primary) — `test_whats_here.py` [0397a64]
+**Entry ID:** myc_202605200801220110
+
+---

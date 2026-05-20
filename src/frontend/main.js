@@ -4,10 +4,35 @@ import { createViewer, flyTo } from "./cesium/viewer.js";
 import { CameraLayer } from "./entities/cameras.js";
 import { AircraftLayer } from "./entities/aircraft.js";
 import { SatelliteLayer } from "./entities/satellites.js";
+import { TransitLayer } from "./entities/transit.js";
 import { GibsLayers } from "./cesium/gibs.js";
 import { discover, context, health, whatsHere } from "./api.js";
 import { LiveSocket, liveUrl } from "./ws.js";
 import { PhotosphereTransition } from "./photosphere/transition.js";
+
+// #region agent log
+function dbg(location, message, data, hypothesisId) {
+  try {
+    fetch("http://127.0.0.1:7253/ingest/0d443fcc-bf02-4ed0-bbab-47f404bdc834", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "X-Debug-Session-Id": "716b73",
+      },
+      body: JSON.stringify({
+        sessionId: "716b73",
+        runId: "ui",
+        hypothesisId,
+        location,
+        message,
+        data,
+        timestamp: Date.now(),
+      }),
+    }).catch(() => {});
+  } catch {}
+}
+window.__gridland_dbg = dbg;
+// #endregion
 
 const $ = (id) => document.getElementById(id);
 
@@ -66,6 +91,33 @@ function renderContext(ctx) {
         `<li>${m.station} · ${m.flight_category ?? ""} · ${m.raw ?? ""}</li>`,
       ).join("") + `</ul>`);
   }
+  if (ctx.transit_alerts?.length) {
+    parts.push(`<h4>SEPTA alerts</h4><ul>` +
+      ctx.transit_alerts.slice(0, 5).map(a =>
+        `<li><b>${a.route_name ?? a.route_id ?? ""}</b>: ${a.current_message ?? a.advisory_message ?? a.detour_message ?? ""}</li>`,
+      ).join("") + `</ul>`);
+  }
+  if (ctx.service_requests?.length) {
+    const counts = {};
+    for (const s of ctx.service_requests) {
+      counts[s.service_name] = (counts[s.service_name] ?? 0) + 1;
+    }
+    const top = Object.entries(counts).sort((a, b) => b[1] - a[1]).slice(0, 5);
+    parts.push(`<h4>Philly 311 (last 7d)</h4>` +
+      `<div>${ctx.service_requests.length} recent · ` +
+      top.map(([k, n]) => `${k}: ${n}`).join(" · ") + `</div>`);
+  }
+  if (ctx.water_gauges?.length) {
+    parts.push(`<h4>USGS water gauges</h4><ul>` +
+      ctx.water_gauges.slice(0, 4).map(g => {
+        const d = g.measurements?.["00060"];
+        const h = g.measurements?.["00065"];
+        const bits = [];
+        if (d?.value != null) bits.push(`${d.value} cfs`);
+        if (h?.value != null) bits.push(`${h.value} ft`);
+        return `<li>${g.name ?? g.site_code} — ${bits.join(", ")}</li>`;
+      }).join("") + `</ul>`);
+  }
   if (ctx.wikipedia?.length) {
     parts.push(`<h4>Nearby (Wikipedia)</h4><ul>` +
       ctx.wikipedia.slice(0, 6).map(w =>
@@ -97,7 +149,7 @@ function renderWhatsHere(payload) {
   target.hidden = false;
 }
 
-function wireLayerToggles({ cameras, aircraft, satellites, gibs }) {
+function wireLayerToggles({ cameras, aircraft, satellites, transit, gibs }) {
   document.querySelectorAll('input[type="checkbox"][data-layer]').forEach((el) => {
     el.addEventListener("change", async () => {
       const key = el.dataset.layer;
@@ -109,6 +161,24 @@ function wireLayerToggles({ cameras, aircraft, satellites, gibs }) {
         case "aircraft":
           aircraft.setVisible(on);
           break;
+        case "transit":
+          if (on) {
+            try {
+              setStatus("loading SEPTA…", "warn");
+              await transit.start();
+              transit.setVisible(true);
+              setStatus(`SEPTA: ${transit.count()} vehicles`, "ok");
+              dbg("main.js:layers", "transit enabled",
+                  { count: transit.count() }, "philly");
+            } catch (e) {
+              console.error(e);
+              setStatus("SEPTA load failed", "error");
+            }
+          } else {
+            transit.stop();
+            transit.setVisible(false);
+          }
+          break;
         case "satellites":
           if (on) {
             try {
@@ -117,8 +187,12 @@ function wireLayerToggles({ cameras, aircraft, satellites, gibs }) {
               satellites.start();
               satellites.setVisible(true);
               setStatus(`satellites: ${satellites.count()}`, "ok");
+              dbg("main.js:layers", "satellites enabled",
+                  { count: satellites.count() }, "H5");
             } catch (e) {
               console.error(e);
+              dbg("main.js:layers", "satellite load failed",
+                  { error: String(e) }, "H5");
               setStatus("satellite load failed", "error");
             }
           } else {
@@ -127,11 +201,19 @@ function wireLayerToggles({ cameras, aircraft, satellites, gibs }) {
           }
           break;
         case "gibs-truecolor":
-          gibs.setEnabled("truecolor", on); break;
         case "gibs-fires":
-          gibs.setEnabled("fires", on); break;
         case "gibs-aerosol":
-          gibs.setEnabled("aerosol", on); break;
+          { const k = key.replace("gibs-", "");
+            try {
+              gibs.setEnabled(k, on);
+              dbg("main.js:layers", `gibs toggled ${k}`,
+                  { on, enabled: gibs.isEnabled(k) }, "H5");
+            } catch (e) {
+              dbg("main.js:layers", `gibs failed ${k}`,
+                  { error: String(e) }, "H5");
+            }
+          }
+          break;
       }
     });
   });
@@ -140,6 +222,14 @@ function wireLayerToggles({ cameras, aircraft, satellites, gibs }) {
 function wireWhatsHereClick(viewer) {
   const handler = new Cesium.ScreenSpaceEventHandler(viewer.scene.canvas);
   handler.setInputAction(async (movement) => {
+    const pickedEntity = viewer.scene.pick(movement.position);
+    // #region agent log
+    dbg("main.js:click", "globe clicked", {
+      pickedEntityKind: pickedEntity?.id?.constructor?.name ?? null,
+      pickedEntityName: pickedEntity?.id?.name ?? null,
+      hasDescription: !!pickedEntity?.id?.description,
+    }, "H1");
+    // #endregion
     const ray = viewer.camera.getPickRay(movement.position);
     if (!ray) return;
     const cart = viewer.scene.globe.pick(ray, viewer.scene);
@@ -158,10 +248,21 @@ function wireWhatsHereClick(viewer) {
 
 async function bootstrap() {
   const viewer = createViewer("cesium-container");
+  // #region agent log
+  dbg("main.js:bootstrap", "viewer created", {
+    infoBox: !!viewer.infoBox,
+    selectionIndicator: !!viewer.selectionIndicator,
+    imageryLayerCount: viewer.imageryLayers.length,
+    imageryProvider: viewer.imageryLayers.get(0)?.imageryProvider?.constructor?.name ?? null,
+    terrainProvider: viewer.terrainProvider?.constructor?.name ?? null,
+    cesiumVersion: Cesium.VERSION,
+  }, "H1+H3");
+  // #endregion
   const cameras = new CameraLayer(viewer);
   const aircraft = new AircraftLayer(viewer);
   const satellites = new SatelliteLayer(viewer);
   satellites.setVisible(false);
+  const transit = new TransitLayer(viewer);
   const gibs = new GibsLayers(viewer);
 
   try {
@@ -193,7 +294,7 @@ async function bootstrap() {
   const photosphere = new PhotosphereTransition(viewer);
   photosphere.start();
 
-  wireLayerToggles({ cameras, aircraft, satellites, gibs });
+  wireLayerToggles({ cameras, aircraft, satellites, transit, gibs });
   wireWhatsHereClick(viewer);
 
   async function scan() {
@@ -210,6 +311,18 @@ async function bootstrap() {
       cameras.setAll(d.results);
       renderCounts(d);
       renderContext(c);
+      // #region agent log
+      dbg("main.js:scan", "scan response", {
+        query: { lat, lon, radius },
+        cameras_total: d.results?.length ?? 0,
+        counts_by_source: d.counts_by_source ?? {},
+        context_keys_with_data: Object.fromEntries(
+          Object.entries(c || {}).map(([k, v]) => [
+            k, Array.isArray(v) ? v.length : (v ? 1 : 0)
+          ])
+        ),
+      }, "H2");
+      // #endregion
       live.setSubscription({ lat, lon, distance_nm: Math.max(50, radius * 2) });
       setStatus(`live: streaming · ${d.results.length} cameras`, "ok");
     } catch (e) {

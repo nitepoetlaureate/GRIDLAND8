@@ -17,6 +17,9 @@ SRC_CALTRANS = "caltrans"
 SRC_WSDOT = "wsdot"
 SRC_N511NY = "n511ny"
 SRC_LIVECAM = "livecam"
+SRC_NYCTMC = "nyctmc"
+SRC_CR511 = "castlerock_511"
+SRC_NPS = "nps_webcams"
 
 # Publication status of a result's underlying source
 PUB_OPERATOR_PUBLISHED = "operator_published"
@@ -40,6 +43,7 @@ ENT_AIRCRAFT = "aircraft"
 ENT_SATELLITE = "satellite"
 ENT_SHIP = "ship"
 ENT_LIGHTNING = "lightning"
+ENT_TRANSIT = "transit"
 
 # WebSocket message envelope keys
 WS_TYPE = "type"

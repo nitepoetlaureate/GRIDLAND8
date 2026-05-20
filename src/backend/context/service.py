@@ -5,7 +5,10 @@ import asyncio
 import logging
 
 from backend.context.models import ContextBundle
-from backend.context.sources import aviation, firms, nws, openaq, usgs, wikipedia
+from backend.context.sources import (
+    aviation, firms, nws, openaq, philly311, septa_alerts, usgs, usgs_water,
+    wikipedia,
+)
 from backend.shared.http import utc_now_iso
 
 log = logging.getLogger(__name__)
@@ -22,10 +25,14 @@ async def gather(lat: float, lon: float) -> ContextBundle:
         firms.active_fires(lat, lon),
         openaq.nearby_aq(lat, lon),
         aviation.metars(lat, lon),
+        septa_alerts.near(lat, lon),
+        philly311.recent(lat, lon),
+        usgs_water.gauges_near(lat, lon),
         return_exceptions=True,
     )
     errors: dict[str, str] = {}
-    weather, alerts, wiki, quakes, fires, aq, metars_ = results
+    (weather, alerts, wiki, quakes, fires, aq, metars_,
+     transit_alerts, service_requests, water_gauges) = results
     if isinstance(weather, BaseException):
         errors["weather"] = str(weather); weather = None
     if isinstance(alerts, BaseException):
@@ -40,6 +47,12 @@ async def gather(lat: float, lon: float) -> ContextBundle:
         errors["air_quality"] = str(aq); aq = []
     if isinstance(metars_, BaseException):
         errors["metars"] = str(metars_); metars_ = []
+    if isinstance(transit_alerts, BaseException):
+        errors["transit_alerts"] = str(transit_alerts); transit_alerts = []
+    if isinstance(service_requests, BaseException):
+        errors["service_requests"] = str(service_requests); service_requests = []
+    if isinstance(water_gauges, BaseException):
+        errors["water_gauges"] = str(water_gauges); water_gauges = []
     return ContextBundle(
         query={"lat": lat, "lon": lon},
         weather=weather,
@@ -49,6 +62,9 @@ async def gather(lat: float, lon: float) -> ContextBundle:
         fires=fires or [],
         air_quality=aq or [],
         metars=metars_ or [],
+        transit_alerts=transit_alerts or [],
+        service_requests=service_requests or [],
+        water_gauges=water_gauges or [],
         fetched_at=utc_now_iso(),
         errors=errors,
     )

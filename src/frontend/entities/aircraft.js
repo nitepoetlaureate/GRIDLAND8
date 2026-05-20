@@ -3,6 +3,24 @@ import * as Cesium from "cesium";
 
 const STALE_MS = 60_000;
 
+function aircraftDescription(ac) {
+  const rows = [
+    ["ICAO24", ac.icao24],
+    ["Callsign", ac.callsign?.trim() || "—"],
+    ["Lat/Lon", `${ac.lat?.toFixed?.(5)}, ${ac.lon?.toFixed?.(5)}`],
+    ["Altitude", ac.alt_m != null ? `${Math.round(ac.alt_m)} m / ${Math.round(ac.alt_m * 3.281)} ft` : "—"],
+    ["Speed", ac.speed_kt != null ? `${Math.round(ac.speed_kt)} kt` : "—"],
+    ["Heading", ac.heading_deg != null ? `${Math.round(ac.heading_deg)}°` : "—"],
+    ["On ground", ac.on_ground ? "yes" : "no"],
+    ["Country", ac.origin_country || "—"],
+  ];
+  return `<table style="font:12px monospace">` +
+    rows.map(([k, v]) =>
+      `<tr><td style="padding-right:8px;color:#8b95a6">${k}</td><td>${v}</td></tr>`
+    ).join("") +
+    `</table>`;
+}
+
 export class AircraftLayer {
   constructor(viewer) {
     this.viewer = viewer;
@@ -67,6 +85,8 @@ export class AircraftLayer {
 
   _add(ac) {
     return this.collection.entities.add({
+      name: this._labelText(ac),
+      description: aircraftDescription(ac),
       position: Cesium.Cartesian3.fromDegrees(ac.lon, ac.lat, ac.alt_m ?? 0),
       point: {
         pixelSize: 6,
@@ -93,6 +113,8 @@ export class AircraftLayer {
   _update(entity, ac) {
     entity.position = Cesium.Cartesian3.fromDegrees(ac.lon, ac.lat, ac.alt_m ?? 0);
     entity.label.text = this._labelText(ac);
+    entity.name = this._labelText(ac);
+    entity.description = aircraftDescription(ac);
     entity.point.color = ac.on_ground
       ? Cesium.Color.fromCssColorString("#8b95a6")
       : Cesium.Color.fromCssColorString("#41d692");
