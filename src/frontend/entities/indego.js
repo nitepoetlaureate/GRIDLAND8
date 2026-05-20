@@ -32,11 +32,14 @@ export class IndegoLayer {
   }
 
   async start(lat, lon, radiusKm = 15) {
-    if (this._enabled) return;
-    this._enabled = true;
     this._lat = lat;
     this._lon = lon;
     this._radiusKm = radiusKm;
+    if (this._enabled) {
+      await this._refresh();
+      return;
+    }
+    this._enabled = true;
     await this._refresh();
     this._timer = setInterval(() => this._refresh(), POLL_INTERVAL_MS);
   }

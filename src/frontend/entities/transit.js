@@ -1,7 +1,9 @@
 /** SEPTA live-vehicle layer. Polls /api/septa/vehicles on an interval. */
 import * as Cesium from "cesium";
+import { animateTo, enableGlobeAnimation } from "./motion.js";
 
-const POLL_INTERVAL_MS = 15_000;
+const POLL_INTERVAL_MS = 10_000;
+const MOTION_SECONDS = 10;
 
 function description(v) {
   const rows = [
@@ -33,9 +35,8 @@ export class TransitLayer {
     this.dataSource = new Cesium.CustomDataSource("septa-transit");
     viewer.dataSources.add(this.dataSource);
     this.dataSource.show = false;
-    this.dataSource.clustering.enabled = true;
-    this.dataSource.clustering.pixelRange = 40;
-    this.dataSource.clustering.minimumClusterSize = 12;
+    this.dataSource.clustering.enabled = false;
+    enableGlobeAnimation(viewer);
     this._index = new Map();
     this._timer = null;
     this._enabled = false;
@@ -46,10 +47,17 @@ export class TransitLayer {
   }
 
   async start() {
-    if (this._enabled) return;
+    if (this._enabled) {
+      await this._refresh();
+      return;
+    }
     this._enabled = true;
     await this._refresh();
     this._timer = setInterval(() => this._refresh(), POLL_INTERVAL_MS);
+  }
+
+  async refresh() {
+    await this._refresh();
   }
 
   stop() {
@@ -85,7 +93,7 @@ export class TransitLayer {
       const isRail = v.kind === "regional_rail";
       const rec = this._index.get(v.id);
       if (rec) {
-        rec.entity.position = pos;
+        animateTo(rec.entity, v.lon, v.lat, 0, MOTION_SECONDS);
         rec.entity.description = description(v);
         rec.entity.label.text = this._labelText(v);
         rec.entity.point.color = colorFor(v);

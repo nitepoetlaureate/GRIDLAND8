@@ -28,15 +28,20 @@ async def panos_near(lat: float, lon: float, radius_m: int = 200,
     if not s.mapillary_api_key:
         return []
     params = {
-        "access_token": s.mapillary_api_key,
         "fields": "id,captured_at,compass_angle,geometry,sequence_id,is_pano,thumb_2048_url",
-        "closeto": f"{lon},{lat}",   # GeoJSON ordering
-        "radius": max(10, min(int(radius_m), 1000)),
+        "lat": lat,
+        "lng": lon,
+        "radius": max(10, min(int(radius_m), 50)),
         "limit": max(1, min(int(limit), 100)),
         "is_pano": "true",
     }
-    data = await get_json(f"{GRAPH_BASE}/images", params=params,
-                          ttl_s=s.cache_ttl_mapillary_s)
+    headers = {"Authorization": f"OAuth {s.mapillary_api_key}"}
+    data = await get_json(
+        f"{GRAPH_BASE}/images",
+        params=params,
+        headers=headers,
+        ttl_s=s.cache_ttl_mapillary_s,
+    )
     if not isinstance(data, dict):
         return []
     out: list[dict] = []

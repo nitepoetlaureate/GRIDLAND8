@@ -59,6 +59,24 @@ async def _stream_aircraft(ws: WebSocket, lat: float, lon: float,
     differ = AircraftDiffer()
     while True:
         try:
+            recv_task = asyncio.create_task(ws.receive_text())
+            sleep_task = asyncio.create_task(asyncio.sleep(interval))
+            done, pending = await asyncio.wait(
+                {recv_task, sleep_task}, return_when=asyncio.FIRST_COMPLETED,
+            )
+            for t in pending:
+                t.cancel()
+            if recv_task in done:
+                raw = recv_task.result()
+                try:
+                    sub = json.loads(raw)
+                    lat = float(sub.get("lat", lat))
+                    lon = float(sub.get("lon", lon))
+                    distance_nm = int(sub.get("distance_nm", distance_nm))
+                    differ.reset()
+                except (json.JSONDecodeError, TypeError, ValueError):
+                    pass
+                continue
             snap = await aircraft_snapshot(lat, lon, distance_nm)
             frame = differ.next_frame(snap["items"], snap["ts"])
             await ws.send_text(json.dumps(frame))
@@ -66,7 +84,6 @@ async def _stream_aircraft(ws: WebSocket, lat: float, lon: float,
             return
         except Exception as e:  # noqa: BLE001
             log.exception("snapshot loop error: %s", e)
-        await asyncio.sleep(interval)
 
 
 @router.websocket("/ws/live")

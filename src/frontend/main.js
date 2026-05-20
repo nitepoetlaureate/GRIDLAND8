@@ -17,6 +17,7 @@ import { GibsLayers } from "./cesium/gibs.js";
 import { discover, context, health, whatsHere } from "./api.js";
 import { LiveSocket, liveUrl } from "./ws.js";
 import { PhotosphereTransition } from "./photosphere/transition.js";
+import { CameraFeedPanel } from "./entities/camera-feed.js";
 
 // #region agent log
 function dbg(location, message, data, hypothesisId) {
@@ -305,10 +306,41 @@ function wireLayerToggles({ cameras, aircraft, satellites, transit, indego, cont
   });
 }
 
+function wireEntitySelection(viewer, { cameras, cameraFeed, aircraft, transit }) {
+  viewer.selectedEntityChanged.addEventListener(() => {
+    const ent = viewer.selectedEntity;
+    if (!ent) {
+      cameraFeed.hide();
+      return;
+    }
+    const id = ent.id ?? "";
+    if (typeof id === "string" && id.startsWith("camera:")) {
+      const props = ent.properties;
+      const cam = props?.getValue
+        ? (typeof props.getValue === "function" ? props.getValue(Cesium.JulianDate.now()) : props)
+        : props;
+      cameraFeed.show(cam);
+      dbg("main.js:select", "camera selected", {
+        id, source: cam?.source, hasThumb: !!cam?.thumbnail_url,
+      }, "H-feed");
+      return;
+    }
+    cameraFeed.hide();
+    if (typeof id === "string" && id.startsWith("septa_")) {
+      dbg("main.js:select", "transit selected", { id }, "H-motion");
+    }
+  });
+
+}
+
 function wireWhatsHereClick(viewer) {
   const handler = new Cesium.ScreenSpaceEventHandler(viewer.scene.canvas);
   handler.setInputAction(async (movement) => {
     const pickedEntity = viewer.scene.pick(movement.position);
+    if (pickedEntity?.id) {
+      viewer.selectedEntity = pickedEntity.id;
+      return;
+    }
     // #region agent log
     dbg("main.js:click", "globe clicked", {
       pickedEntityKind: pickedEntity?.id?.constructor?.name ?? null,
@@ -374,7 +406,14 @@ async function bootstrap() {
       distance_nm: 250,
     },
     onMessage: (frame) => {
-      if (frame.type === "aircraft") aircraft.handleFrame(frame);
+      if (frame.type === "aircraft") {
+        aircraft.handleFrame(frame);
+        if (frame.kind === "snapshot") {
+          dbg("main.js:ws", "aircraft snapshot", {
+            count: frame.count ?? frame.items?.length ?? 0,
+          }, "H-motion");
+        }
+      }
     },
     onStatus: (s) => {
       const map = { connecting: "live: connecting", open: "live: streaming",
@@ -387,8 +426,10 @@ async function bootstrap() {
 
   const photosphere = new PhotosphereTransition(viewer);
   photosphere.start();
+  const cameraFeed = new CameraFeedPanel("camera-feed");
 
   wireLayerToggles({ cameras, aircraft, satellites, transit, indego, contextPois, gibs });
+  wireEntitySelection(viewer, { cameras, cameraFeed, aircraft, transit });
   wireWhatsHereClick(viewer);
 
   function flyQuery(preset) {
@@ -430,14 +471,14 @@ async function bootstrap() {
       if (d.results?.length && radius <= 8) {
         cameras.flyToResults(viewer, { duration: 1.0 });
       }
-      live.close();
-      live.connect();
+      live.setSubscription({ lat, lon, distance_nm: Math.max(50, radius * 2) });
       if (isPhillyArea(lat, lon)) {
         setLayerCheckbox("transit", true);
         setLayerCheckbox("indego", true);
         try {
           await transit.start();
           transit.setVisible(true);
+          await transit.refresh();
           await indego.start(lat, lon, Math.min(radius, 15));
           indego.setVisible(true);
         } catch (e) {
@@ -458,11 +499,14 @@ async function bootstrap() {
         ),
       }, "H2");
       // #endregion
-      live.setSubscription({ lat, lon, distance_nm: Math.max(50, radius * 2) });
       const poiN = contextPois.count();
+      const indegoN = (c.indego_stations || []).length;
       setStatus(
-        `scan ok · ${d.results.length} cameras · ${poiN} context pins` +
-        (isPhillyArea(lat, lon) ? ` · SEPTA ${transit.count()}` : ""),
+        `scan ok · ${d.results.length} cameras · ${poiN} pins` +
+        (isPhillyArea(lat, lon)
+          ? ` · SEPTA ${transit.count()} · Indego ${indegoN || indego.count()}`
+          : "") +
+        ` · aircraft streaming`,
         "ok",
       );
     } catch (e) {

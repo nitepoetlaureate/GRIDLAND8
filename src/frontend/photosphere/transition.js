@@ -64,7 +64,10 @@ export class PhotosphereTransition {
       return;
     }
     if (!panos.length) return;
-    this._open(panos[0]);
+    const pano = panos[0];
+    const viewUrl = pano.thumb_2048_url || pano.thumbnail_url;
+    if (!viewUrl) return;
+    this._open({ ...pano, thumb_2048_url: viewUrl });
   }
 
   _open(pano) {

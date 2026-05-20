@@ -728,3 +728,208 @@ Expand to 5 new sources, add cache + WS diffing, upgrade Mycelium to auto-record
 **Entry ID:** myc_202605200852370144
 
 ---
+
+### 2026-05-20T07:50:03-04:00 — Composer (primary) — `.gitignore` [e8b05e8]
+**Entry ID:** myc_202605201150040145
+Backend returned data but map layers failed to render due to parser and UX gaps.
+---
+
+### 2026-05-20T07:50:03-04:00 — Composer (primary) — `CHANGELOG.md` [e8b05e8]
+**Entry ID:** myc_202605201150040146
+Backend returned data but map layers failed to render due to parser and UX gaps.
+---
+
+### 2026-05-20T07:50:03-04:00 — Composer (primary) — `log.json` [e8b05e8]
+**Entry ID:** myc_202605201150040147
+Backend returned data but map layers failed to render due to parser and UX gaps.
+---
+
+### 2026-05-20T07:50:03-04:00 — Composer (primary) — `README.md` [e8b05e8]
+**Entry ID:** myc_202605201150040148
+Backend returned data but map layers failed to render due to parser and UX gaps.
+---
+
+### 2026-05-20T07:50:03-04:00 — Composer (primary) — `.env.example` [e8b05e8]
+**Entry ID:** myc_202605201150040149
+Backend returned data but map layers failed to render due to parser and UX gaps.
+---
+
+### 2026-05-20T07:50:03-04:00 — Composer (primary) — `docker-compose.yml` [e8b05e8]
+**Entry ID:** myc_202605201150040150
+Backend returned data but map layers failed to render due to parser and UX gaps.
+---
+
+### 2026-05-20T07:50:03-04:00 — Composer (primary) — `index.html` [e8b05e8]
+**Entry ID:** myc_202605201150040151
+Backend returned data but map layers failed to render due to parser and UX gaps.
+---
+
+### 2026-05-20T07:50:03-04:00 — Composer (primary) — `check-no-secrets.sh` [e8b05e8]
+**Entry ID:** myc_202605201150040152
+Backend returned data but map layers failed to render due to parser and UX gaps.
+---
+
+### 2026-05-20T07:50:03-04:00 — Composer (primary) — `pre-commit` [e8b05e8]
+**Entry ID:** myc_202605201150040153
+Backend returned data but map layers failed to render due to parser and UX gaps.
+---
+
+### 2026-05-20T07:50:03-04:00 — Composer (primary) — `install-hooks.sh` [e8b05e8]
+**Entry ID:** myc_202605201150040154
+Backend returned data but map layers failed to render due to parser and UX gaps.
+---
+
+### 2026-05-20T07:50:03-04:00 — Composer (primary) — `transit.py` [e8b05e8]
+**Entry ID:** myc_202605201150040155
+Backend returned data but map layers failed to render due to parser and UX gaps.
+---
+
+### 2026-05-20T07:50:03-04:00 — Composer (primary) — `models.py` [e8b05e8]
+**Entry ID:** myc_202605201150040156
+Backend returned data but map layers failed to render due to parser and UX gaps.
+---
+
+### 2026-05-20T07:50:03-04:00 — Composer (primary) — `service.py` [e8b05e8]
+**Entry ID:** myc_202605201150040157
+Backend returned data but map layers failed to render due to parser and UX gaps.
+---
+
+### 2026-05-20T07:50:03-04:00 — Composer (primary) — `opendataphilly.py` [e8b05e8]
+**Entry ID:** myc_202605201150040158
+Backend returned data but map layers failed to render due to parser and UX gaps.
+---
+
+### 2026-05-20T07:50:03-04:00 — Composer (primary) — `philly311.py` [e8b05e8]
+**Entry ID:** myc_202605201150040159
+Backend returned data but map layers failed to render due to parser and UX gaps.
+---
+
+### 2026-05-20T07:50:03-04:00 — Composer (primary) — `septa_detours.py` [e8b05e8]
+**Entry ID:** myc_202605201150040160
+Backend returned data but map layers failed to render due to parser and UX gaps.
+---
+
+### 2026-05-20T07:50:03-04:00 — Composer (primary) — `models.py` [e8b05e8]
+**Entry ID:** myc_202605201150040161
+Backend returned data but map layers failed to render due to parser and UX gaps.
+---
+
+### 2026-05-20T07:50:03-04:00 — Composer (primary) — `service.py` [e8b05e8]
+**Entry ID:** myc_202605201150040162
+Backend returned data but map layers failed to render due to parser and UX gaps.
+---
+
+### 2026-05-20T07:50:03-04:00 — Composer (primary) — `cam2.py` [e8b05e8]
+**Entry ID:** myc_202605201150040163
+Backend returned data but map layers failed to render due to parser and UX gaps.
+---
+
+### 2026-05-20T07:50:03-04:00 — Composer (primary) — `penndot.py` [e8b05e8]
+**Entry ID:** myc_202605201150040164
+Backend returned data but map layers failed to render due to parser and UX gaps.
+---
+
+### 2026-05-20T07:50:03-04:00 — Composer (primary) — `adsb_fi.py` [e8b05e8]
+**Entry ID:** myc_202605201150040165
+Backend returned data but map layers failed to render due to parser and UX gaps.
+---
+
+### 2026-05-20T07:50:03-04:00 — Composer (primary) — `indego.py` [e8b05e8]
+**Entry ID:** myc_202605201150040166
+Backend returned data but map layers failed to render due to parser and UX gaps.
+---
+
+### 2026-05-20T07:50:03-04:00 — Composer (primary) — `septa_vehicles.py` [e8b05e8]
+**Entry ID:** myc_202605201150040167
+Backend returned data but map layers failed to render due to parser and UX gaps.
+---
+
+### 2026-05-20T07:50:03-04:00 — Composer (primary) — `settings.py` [e8b05e8]
+**Entry ID:** myc_202605201150040168
+Backend returned data but map layers failed to render due to parser and UX gaps.
+---
+
+### 2026-05-20T07:50:03-04:00 — Composer (primary) — `constants.py` [e8b05e8]
+**Entry ID:** myc_202605201150040169
+Backend returned data but map layers failed to render due to parser and UX gaps.
+---
+
+### 2026-05-20T07:50:03-04:00 — Composer (primary) — `opendataphilly.py` [e8b05e8]
+**Entry ID:** myc_202605201150040170
+Backend returned data but map layers failed to render due to parser and UX gaps.
+---
+
+### 2026-05-20T07:50:03-04:00 — Composer (primary) — `viewer.js` [e8b05e8]
+**Entry ID:** myc_202605201150040171
+Backend returned data but map layers failed to render due to parser and UX gaps.
+---
+
+### 2026-05-20T07:50:03-04:00 — Composer (primary) — `aircraft.js` [e8b05e8]
+**Entry ID:** myc_202605201150040172
+Backend returned data but map layers failed to render due to parser and UX gaps.
+---
+
+### 2026-05-20T07:50:03-04:00 — Composer (primary) — `cameras.js` [e8b05e8]
+**Entry ID:** myc_202605201150040173
+Backend returned data but map layers failed to render due to parser and UX gaps.
+---
+
+### 2026-05-20T07:50:03-04:00 — Composer (primary) — `context-pois.js` [e8b05e8]
+**Entry ID:** myc_202605201150040174
+Backend returned data but map layers failed to render due to parser and UX gaps.
+---
+
+### 2026-05-20T07:50:03-04:00 — Composer (primary) — `indego.js` [e8b05e8]
+**Entry ID:** myc_202605201150040175
+Backend returned data but map layers failed to render due to parser and UX gaps.
+---
+
+### 2026-05-20T07:50:03-04:00 — Composer (primary) — `source-colors.js` [e8b05e8]
+**Entry ID:** myc_202605201150040176
+Backend returned data but map layers failed to render due to parser and UX gaps.
+---
+
+### 2026-05-20T07:50:03-04:00 — Composer (primary) — `transit.js` [e8b05e8]
+**Entry ID:** myc_202605201150040177
+Backend returned data but map layers failed to render due to parser and UX gaps.
+---
+
+### 2026-05-20T07:50:03-04:00 — Composer (primary) — `main.js` [e8b05e8]
+**Entry ID:** myc_202605201150040178
+Backend returned data but map layers failed to render due to parser and UX gaps.
+---
+
+### 2026-05-20T07:50:03-04:00 — Composer (primary) — `style.css` [e8b05e8]
+**Entry ID:** myc_202605201150040179
+Backend returned data but map layers failed to render due to parser and UX gaps.
+---
+
+### 2026-05-20T07:50:03-04:00 — Composer (primary) — `test_context.py` [e8b05e8]
+**Entry ID:** myc_202605201150040180
+Backend returned data but map layers failed to render due to parser and UX gaps.
+---
+
+### 2026-05-20T07:50:03-04:00 — Composer (primary) — `test_opendataphilly.py` [e8b05e8]
+**Entry ID:** myc_202605201150040181
+Backend returned data but map layers failed to render due to parser and UX gaps.
+---
+
+### 2026-05-20T07:50:03-04:00 — Composer (primary) — `test_philly_pack.py` [e8b05e8]
+**Entry ID:** myc_202605201150040182
+Backend returned data but map layers failed to render due to parser and UX gaps.
+---
+
+### 2026-05-20T07:50:03-04:00 — Composer (primary) — `test_philly_sources.py` [e8b05e8]
+**Entry ID:** myc_202605201150040183
+Backend returned data but map layers failed to render due to parser and UX gaps.
+---
+
+### 2026-05-20T07:50:03-04:00 — Composer (primary) — `test_pipeline_adsb.py` [e8b05e8]
+**Entry ID:** myc_202605201150040184
+Backend returned data but map layers failed to render due to parser and UX gaps.
+---
+
+### 2026-05-20T07:50:03-04:00 — Composer (primary) — `vite.config.js` [e8b05e8]
+**Entry ID:** myc_202605201150040185
+Backend returned data but map layers failed to render due to parser and UX gaps.
+---

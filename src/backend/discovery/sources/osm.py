@@ -78,6 +78,8 @@ def normalize(elements: Iterable[dict]) -> list[CameraResult]:
         tags = el.get("tags") or {}
         node_id = el.get("id")
         url = tags.get("contact:webcam") or tags.get("webcam") or tags.get("url") or ""
+        stream = str(tags.get("camera:stream") or tags.get("surveillance:stream") or "")
+        thumb = stream if stream.startswith("http") else None
         if url and "@" in url.split("://", 1)[-1].split("/", 1)[0]:
             url = ""
         unique = f"osm:{node_id}" if node_id is not None else f"osm:{lat:.5f},{lon:.5f}"
@@ -91,12 +93,13 @@ def normalize(elements: Iterable[dict]) -> list[CameraResult]:
                 publication_status=PUB_DIRECTORY_LISTED,
                 label=_label_from_tags(tags),
                 url=url,
-                thumbnail_url=None,
+                thumbnail_url=thumb,
                 blur_required=True,
                 data_age_s=0,
                 fetched_at=now,
                 tags={k: str(v) for k, v in tags.items() if k in
-                      ("operator", "surveillance:type", "camera:type", "name")},
+                      ("operator", "surveillance:type", "camera:type", "name",
+                       "camera:stream", "surveillance:stream")},
             )
         except Exception as e:  # pydantic validation error
             log.debug("dropping invalid OSM node %s: %s", node_id, e)

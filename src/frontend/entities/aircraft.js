@@ -1,5 +1,8 @@
 /** Aircraft entity collection. Handles snapshot + diff frames from /ws/live. */
 import * as Cesium from "cesium";
+import { animateTo, enableGlobeAnimation } from "./motion.js";
+
+const MOTION_SECONDS = 10;
 
 const STALE_MS = 60_000;
 
@@ -28,6 +31,7 @@ export class AircraftLayer {
     this.collection = new Cesium.CustomDataSource("aircraft");
     viewer.dataSources.add(this.collection);
     this._index = new Map();
+    enableGlobeAnimation(viewer);
   }
 
   handleFrame(frame) {
@@ -115,7 +119,7 @@ export class AircraftLayer {
   }
 
   _update(entity, ac) {
-    entity.position = Cesium.Cartesian3.fromDegrees(ac.lon, ac.lat, ac.alt_m ?? 0);
+    animateTo(entity, ac.lon, ac.lat, ac.alt_m ?? 0, MOTION_SECONDS);
     entity.label.text = this._labelText(ac);
     entity.name = this._labelText(ac);
     entity.description = aircraftDescription(ac);
