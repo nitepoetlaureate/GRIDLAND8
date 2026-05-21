@@ -1348,3 +1348,13 @@ Hook-appended changelog lines for the mycelium sync commit.
 **Entry ID:** myc_202605210115160268
 Hook-appended changelog lines for the mycelium sync commit.
 ---
+
+### 2026-05-20T21:22:53-04:00 — cursor-composer (primary) — `CHANGELOG.md` [3aefbd6]
+**Entry ID:** myc_202605210122540269
+Commit remaining agent changelog and log entries.
+---
+
+### 2026-05-20T21:22:53-04:00 — cursor-composer (primary) — `log.json` [3aefbd6]
+**Entry ID:** myc_202605210122540270
+Commit remaining agent changelog and log entries.
+---
