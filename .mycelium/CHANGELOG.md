@@ -1003,3 +1003,328 @@ Backend data reached the client but rendering, motion, and photosphere API shape
 **Entry ID:** myc_202605202200280199
 Backend data reached the client but rendering, motion, and photosphere API shape blocked the UI.
 ---
+
+### 2026-05-20T21:12:25-04:00 — cursor-composer (primary) — `CHANGELOG.md` [11fd73d]
+**Entry ID:** myc_202605210112260200
+Ship session UX, SEPTA metro, aircraft enrichment, and street-view dock per user request.
+---
+
+### 2026-05-20T21:12:25-04:00 — cursor-composer (primary) — `log.json` [11fd73d]
+**Entry ID:** myc_202605210112260201
+Ship session UX, SEPTA metro, aircraft enrichment, and street-view dock per user request.
+---
+
+### 2026-05-20T21:12:25-04:00 — cursor-composer (primary) — `Makefile` [11fd73d]
+**Entry ID:** myc_202605210112260202
+Ship session UX, SEPTA metro, aircraft enrichment, and street-view dock per user request.
+---
+
+### 2026-05-20T21:12:25-04:00 — cursor-composer (primary) — `.env.example` [11fd73d]
+**Entry ID:** myc_202605210112260203
+Ship session UX, SEPTA metro, aircraft enrichment, and street-view dock per user request.
+---
+
+### 2026-05-20T21:12:25-04:00 — cursor-composer (primary) — `README.md` [11fd73d]
+**Entry ID:** myc_202605210112260204
+Ship session UX, SEPTA metro, aircraft enrichment, and street-view dock per user request.
+---
+
+### 2026-05-20T21:12:25-04:00 — cursor-composer (primary) — `manual-ip.example.json` [11fd73d]
+**Entry ID:** myc_202605210112260205
+Ship session UX, SEPTA metro, aircraft enrichment, and street-view dock per user request.
+---
+
+### 2026-05-20T21:12:25-04:00 — cursor-composer (primary) — `philly-manual.example.json` [11fd73d]
+**Entry ID:** myc_202605210112260206
+Ship session UX, SEPTA metro, aircraft enrichment, and street-view dock per user request.
+---
+
+### 2026-05-20T21:12:25-04:00 — cursor-composer (primary) — `septa_metro_stations.json` [11fd73d]
+**Entry ID:** myc_202605210112260207
+Ship session UX, SEPTA metro, aircraft enrichment, and street-view dock per user request.
+---
+
+### 2026-05-20T21:12:25-04:00 — cursor-composer (primary) — `TODO.md` [11fd73d]
+**Entry ID:** myc_202605210112260208
+Ship session UX, SEPTA metro, aircraft enrichment, and street-view dock per user request.
+---
+
+### 2026-05-20T21:12:25-04:00 — cursor-composer (primary) — `index.html` [11fd73d]
+**Entry ID:** myc_202605210112260209
+Ship session UX, SEPTA metro, aircraft enrichment, and street-view dock per user request.
+---
+
+### 2026-05-20T21:12:25-04:00 — cursor-composer (primary) — `package-lock.json` [11fd73d]
+**Entry ID:** myc_202605210112260210
+Ship session UX, SEPTA metro, aircraft enrichment, and street-view dock per user request.
+---
+
+### 2026-05-20T21:12:25-04:00 — cursor-composer (primary) — `package.json` [11fd73d]
+**Entry ID:** myc_202605210112260211
+Ship session UX, SEPTA metro, aircraft enrichment, and street-view dock per user request.
+---
+
+### 2026-05-20T21:12:25-04:00 — cursor-composer (primary) — `test_click_live_data.py` [11fd73d]
+**Entry ID:** myc_202605210112260212
+Ship session UX, SEPTA metro, aircraft enrichment, and street-view dock per user request.
+---
+
+### 2026-05-20T21:12:25-04:00 — cursor-composer (primary) — `test_click_ui.mjs` [11fd73d]
+**Entry ID:** myc_202605210112260213
+Ship session UX, SEPTA metro, aircraft enrichment, and street-view dock per user request.
+---
+
+### 2026-05-20T21:12:25-04:00 — cursor-composer (primary) — `camera_proxy.py` [11fd73d]
+**Entry ID:** myc_202605210112260214
+Ship session UX, SEPTA metro, aircraft enrichment, and street-view dock per user request.
+---
+
+### 2026-05-20T21:12:25-04:00 — cursor-composer (primary) — `live_status.py` [11fd73d]
+**Entry ID:** myc_202605210112260215
+Ship session UX, SEPTA metro, aircraft enrichment, and street-view dock per user request.
+---
+
+### 2026-05-20T21:12:25-04:00 — cursor-composer (primary) — `photosphere.py` [11fd73d]
+**Entry ID:** myc_202605210112260216
+Ship session UX, SEPTA metro, aircraft enrichment, and street-view dock per user request.
+---
+
+### 2026-05-20T21:12:25-04:00 — cursor-composer (primary) — `realtime.py` [11fd73d]
+**Entry ID:** myc_202605210112270217
+Ship session UX, SEPTA metro, aircraft enrichment, and street-view dock per user request.
+---
+
+### 2026-05-20T21:12:25-04:00 — cursor-composer (primary) — `transit.py` [11fd73d]
+**Entry ID:** myc_202605210112270218
+Ship session UX, SEPTA metro, aircraft enrichment, and street-view dock per user request.
+---
+
+### 2026-05-20T21:12:25-04:00 — cursor-composer (primary) — `models.py` [11fd73d]
+**Entry ID:** myc_202605210112270219
+Ship session UX, SEPTA metro, aircraft enrichment, and street-view dock per user request.
+---
+
+### 2026-05-20T21:12:25-04:00 — cursor-composer (primary) — `__init__.py` [11fd73d]
+**Entry ID:** myc_202605210112270220
+Ship session UX, SEPTA metro, aircraft enrichment, and street-view dock per user request.
+---
+
+### 2026-05-20T21:12:25-04:00 — cursor-composer (primary) — `base.py` [11fd73d]
+**Entry ID:** myc_202605210112270221
+Ship session UX, SEPTA metro, aircraft enrichment, and street-view dock per user request.
+---
+
+### 2026-05-20T21:12:25-04:00 — cursor-composer (primary) — `json_cameras.py` [11fd73d]
+**Entry ID:** myc_202605210112270222
+Ship session UX, SEPTA metro, aircraft enrichment, and street-view dock per user request.
+---
+
+### 2026-05-20T21:12:25-04:00 — cursor-composer (primary) — `service.py` [11fd73d]
+**Entry ID:** myc_202605210112270223
+Ship session UX, SEPTA metro, aircraft enrichment, and street-view dock per user request.
+---
+
+### 2026-05-20T21:12:25-04:00 — cursor-composer (primary) — `mapillary.py` [11fd73d]
+**Entry ID:** myc_202605210112270224
+Ship session UX, SEPTA metro, aircraft enrichment, and street-view dock per user request.
+---
+
+### 2026-05-20T21:12:25-04:00 — cursor-composer (primary) — `n511pa.py` [11fd73d]
+**Entry ID:** myc_202605210112270225
+Ship session UX, SEPTA metro, aircraft enrichment, and street-view dock per user request.
+---
+
+### 2026-05-20T21:12:25-04:00 — cursor-composer (primary) — `main.py` [11fd73d]
+**Entry ID:** myc_202605210112270226
+Ship session UX, SEPTA metro, aircraft enrichment, and street-view dock per user request.
+---
+
+### 2026-05-20T21:12:25-04:00 — cursor-composer (primary) — `models.py` [11fd73d]
+**Entry ID:** myc_202605210112270227
+Ship session UX, SEPTA metro, aircraft enrichment, and street-view dock per user request.
+---
+
+### 2026-05-20T21:12:25-04:00 — cursor-composer (primary) — `adsb_fi.py` [11fd73d]
+**Entry ID:** myc_202605210112270228
+Ship session UX, SEPTA metro, aircraft enrichment, and street-view dock per user request.
+---
+
+### 2026-05-20T21:12:25-04:00 — cursor-composer (primary) — `septa_metro.py` [11fd73d]
+**Entry ID:** myc_202605210112270229
+Ship session UX, SEPTA metro, aircraft enrichment, and street-view dock per user request.
+---
+
+### 2026-05-20T21:12:25-04:00 — cursor-composer (primary) — `septa_vehicles.py` [11fd73d]
+**Entry ID:** myc_202605210112270230
+Ship session UX, SEPTA metro, aircraft enrichment, and street-view dock per user request.
+---
+
+### 2026-05-20T21:12:25-04:00 — cursor-composer (primary) — `settings.py` [11fd73d]
+**Entry ID:** myc_202605210112270231
+Ship session UX, SEPTA metro, aircraft enrichment, and street-view dock per user request.
+---
+
+### 2026-05-20T21:12:25-04:00 — cursor-composer (primary) — `geo.py` [11fd73d]
+**Entry ID:** myc_202605210112270232
+Ship session UX, SEPTA metro, aircraft enrichment, and street-view dock per user request.
+---
+
+### 2026-05-20T21:12:25-04:00 — cursor-composer (primary) — `viewer.js` [11fd73d]
+**Entry ID:** myc_202605210112270233
+Ship session UX, SEPTA metro, aircraft enrichment, and street-view dock per user request.
+---
+
+### 2026-05-20T21:12:25-04:00 — cursor-composer (primary) — `aircraft-detail-rows.js` [11fd73d]
+**Entry ID:** myc_202605210112270234
+Ship session UX, SEPTA metro, aircraft enrichment, and street-view dock per user request.
+---
+
+### 2026-05-20T21:12:25-04:00 — cursor-composer (primary) — `aircraft.js` [11fd73d]
+**Entry ID:** myc_202605210112270235
+Ship session UX, SEPTA metro, aircraft enrichment, and street-view dock per user request.
+---
+
+### 2026-05-20T21:12:25-04:00 — cursor-composer (primary) — `camera-feed.js` [11fd73d]
+**Entry ID:** myc_202605210112270236
+Ship session UX, SEPTA metro, aircraft enrichment, and street-view dock per user request.
+---
+
+### 2026-05-20T21:12:25-04:00 — cursor-composer (primary) — `cameras.js` [11fd73d]
+**Entry ID:** myc_202605210112270237
+Ship session UX, SEPTA metro, aircraft enrichment, and street-view dock per user request.
+---
+
+### 2026-05-20T21:12:25-04:00 — cursor-composer (primary) — `context-live-pois.js` [11fd73d]
+**Entry ID:** myc_202605210112270238
+Ship session UX, SEPTA metro, aircraft enrichment, and street-view dock per user request.
+---
+
+### 2026-05-20T21:12:25-04:00 — cursor-composer (primary) — `context-pois.js` [11fd73d]
+**Entry ID:** myc_202605210112270239
+Ship session UX, SEPTA metro, aircraft enrichment, and street-view dock per user request.
+---
+
+### 2026-05-20T21:12:25-04:00 — cursor-composer (primary) — `entity-data.js` [11fd73d]
+**Entry ID:** myc_202605210112270240
+Ship session UX, SEPTA metro, aircraft enrichment, and street-view dock per user request.
+---
+
+### 2026-05-20T21:12:25-04:00 — cursor-composer (primary) — `entity-detail-metro.js` [11fd73d]
+**Entry ID:** myc_202605210112270241
+Ship session UX, SEPTA metro, aircraft enrichment, and street-view dock per user request.
+---
+
+### 2026-05-20T21:12:25-04:00 — cursor-composer (primary) — `entity-detail-rows.js` [11fd73d]
+**Entry ID:** myc_202605210112270242
+Ship session UX, SEPTA metro, aircraft enrichment, and street-view dock per user request.
+---
+
+### 2026-05-20T21:12:25-04:00 — cursor-composer (primary) — `entity-detail.js` [11fd73d]
+**Entry ID:** myc_202605210112270243
+Ship session UX, SEPTA metro, aircraft enrichment, and street-view dock per user request.
+---
+
+### 2026-05-20T21:12:25-04:00 — cursor-composer (primary) — `entity-selection.js` [11fd73d]
+**Entry ID:** myc_202605210112270244
+Ship session UX, SEPTA metro, aircraft enrichment, and street-view dock per user request.
+---
+
+### 2026-05-20T21:12:25-04:00 — cursor-composer (primary) — `fly-to-selection.js` [11fd73d]
+**Entry ID:** myc_202605210112270245
+Ship session UX, SEPTA metro, aircraft enrichment, and street-view dock per user request.
+---
+
+### 2026-05-20T21:12:25-04:00 — cursor-composer (primary) — `indego.js` [11fd73d]
+**Entry ID:** myc_202605210112270246
+Ship session UX, SEPTA metro, aircraft enrichment, and street-view dock per user request.
+---
+
+### 2026-05-20T21:12:25-04:00 — cursor-composer (primary) — `layer-glyphs.js` [11fd73d]
+**Entry ID:** myc_202605210112270247
+Ship session UX, SEPTA metro, aircraft enrichment, and street-view dock per user request.
+---
+
+### 2026-05-20T21:12:25-04:00 — cursor-composer (primary) — `layer-icons.js` [11fd73d]
+**Entry ID:** myc_202605210112270248
+Ship session UX, SEPTA metro, aircraft enrichment, and street-view dock per user request.
+---
+
+### 2026-05-20T21:12:25-04:00 — cursor-composer (primary) — `motion.js` [11fd73d]
+**Entry ID:** myc_202605210112270249
+Ship session UX, SEPTA metro, aircraft enrichment, and street-view dock per user request.
+---
+
+### 2026-05-20T21:12:25-04:00 — cursor-composer (primary) — `satellites.js` [11fd73d]
+**Entry ID:** myc_202605210112270250
+Ship session UX, SEPTA metro, aircraft enrichment, and street-view dock per user request.
+---
+
+### 2026-05-20T21:12:25-04:00 — cursor-composer (primary) — `septa-colors.js` [11fd73d]
+**Entry ID:** myc_202605210112270251
+Ship session UX, SEPTA metro, aircraft enrichment, and street-view dock per user request.
+---
+
+### 2026-05-20T21:12:25-04:00 — cursor-composer (primary) — `septa-metro-corridors.js` [11fd73d]
+**Entry ID:** myc_202605210112270252
+Ship session UX, SEPTA metro, aircraft enrichment, and street-view dock per user request.
+---
+
+### 2026-05-20T21:12:25-04:00 — cursor-composer (primary) — `septa-metro.js` [11fd73d]
+**Entry ID:** myc_202605210112270253
+Ship session UX, SEPTA metro, aircraft enrichment, and street-view dock per user request.
+---
+
+### 2026-05-20T21:12:25-04:00 — cursor-composer (primary) — `source-colors.js` [11fd73d]
+**Entry ID:** myc_202605210112270254
+Ship session UX, SEPTA metro, aircraft enrichment, and street-view dock per user request.
+---
+
+### 2026-05-20T21:12:25-04:00 — cursor-composer (primary) — `transit.js` [11fd73d]
+**Entry ID:** myc_202605210112270255
+Ship session UX, SEPTA metro, aircraft enrichment, and street-view dock per user request.
+---
+
+### 2026-05-20T21:12:25-04:00 — cursor-composer (primary) — `geo.js` [11fd73d]
+**Entry ID:** myc_202605210112270256
+Ship session UX, SEPTA metro, aircraft enrichment, and street-view dock per user request.
+---
+
+### 2026-05-20T21:12:25-04:00 — cursor-composer (primary) — `live-scheduler.js` [11fd73d]
+**Entry ID:** myc_202605210112270257
+Ship session UX, SEPTA metro, aircraft enrichment, and street-view dock per user request.
+---
+
+### 2026-05-20T21:12:25-04:00 — cursor-composer (primary) — `main.js` [11fd73d]
+**Entry ID:** myc_202605210112270258
+Ship session UX, SEPTA metro, aircraft enrichment, and street-view dock per user request.
+---
+
+### 2026-05-20T21:12:25-04:00 — cursor-composer (primary) — `transition.js` [11fd73d]
+**Entry ID:** myc_202605210112270259
+Ship session UX, SEPTA metro, aircraft enrichment, and street-view dock per user request.
+---
+
+### 2026-05-20T21:12:25-04:00 — cursor-composer (primary) — `style.css` [11fd73d]
+**Entry ID:** myc_202605210112270260
+Ship session UX, SEPTA metro, aircraft enrichment, and street-view dock per user request.
+---
+
+### 2026-05-20T21:12:25-04:00 — cursor-composer (primary) — `viewport.js` [11fd73d]
+**Entry ID:** myc_202605210112270261
+Ship session UX, SEPTA metro, aircraft enrichment, and street-view dock per user request.
+---
+
+### 2026-05-20T21:12:25-04:00 — cursor-composer (primary) — `test_context_more.py` [11fd73d]
+**Entry ID:** myc_202605210112270262
+Ship session UX, SEPTA metro, aircraft enrichment, and street-view dock per user request.
+---
+
+### 2026-05-20T21:12:25-04:00 — cursor-composer (primary) — `test_philly_sources.py` [11fd73d]
+**Entry ID:** myc_202605210112270263
+Ship session UX, SEPTA metro, aircraft enrichment, and street-view dock per user request.
+---
+
+### 2026-05-20T21:12:25-04:00 — cursor-composer (primary) — `test_septa_metro.py` [11fd73d]
+**Entry ID:** myc_202605210112270264
+Ship session UX, SEPTA metro, aircraft enrichment, and street-view dock per user request.
+---
