@@ -3493,5 +3493,31 @@
     "timestamp": "2026-05-20T21:12:25-04:00",
     "auto": true,
     "id": "myc_202605210112270264"
+  },
+  {
+    "agent": "cursor-composer",
+    "department": "ops",
+    "phase": "primary",
+    "action": "modified",
+    "file": ".mycelium/CHANGELOG.md",
+    "rationale": "Record post-commit agent changelog and log entries for the shipped release.",
+    "critique_of": null,
+    "commit": "280d77a2969f7129d391dca95d95636bee7c26d0",
+    "timestamp": "2026-05-20T21:14:52-04:00",
+    "auto": true,
+    "id": "myc_202605210114530265"
+  },
+  {
+    "agent": "cursor-composer",
+    "department": "ops",
+    "phase": "primary",
+    "action": "modified",
+    "file": ".mycelium/log.json",
+    "rationale": "Record post-commit agent changelog and log entries for the shipped release.",
+    "critique_of": null,
+    "commit": "280d77a2969f7129d391dca95d95636bee7c26d0",
+    "timestamp": "2026-05-20T21:14:52-04:00",
+    "auto": true,
+    "id": "myc_202605210114530266"
   }
 ]

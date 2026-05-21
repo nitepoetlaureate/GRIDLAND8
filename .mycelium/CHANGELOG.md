@@ -1328,3 +1328,13 @@ Ship session UX, SEPTA metro, aircraft enrichment, and street-view dock per user
 **Entry ID:** myc_202605210112270264
 Ship session UX, SEPTA metro, aircraft enrichment, and street-view dock per user request.
 ---
+
+### 2026-05-20T21:14:52-04:00 — cursor-composer (primary) — `CHANGELOG.md` [280d77a]
+**Entry ID:** myc_202605210114530265
+Record post-commit agent changelog and log entries for the shipped release.
+---
+
+### 2026-05-20T21:14:52-04:00 — cursor-composer (primary) — `log.json` [280d77a]
+**Entry ID:** myc_202605210114530266
+Record post-commit agent changelog and log entries for the shipped release.
+---
