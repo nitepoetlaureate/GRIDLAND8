@@ -1,7 +1,6 @@
 /** GRIDLAND frontend entry point. */
 import * as Cesium from "cesium";
 import {
-  cameraState,
   createViewer,
   flyTo,
   flyToPreset,
@@ -11,42 +10,65 @@ import { CameraLayer } from "./entities/cameras.js";
 import { AircraftLayer } from "./entities/aircraft.js";
 import { SatelliteLayer } from "./entities/satellites.js";
 import { TransitLayer } from "./entities/transit.js";
+import { SeptaMetroLayer } from "./entities/septa-metro.js";
 import { IndegoLayer } from "./entities/indego.js";
 import { ContextPoiLayer } from "./entities/context-pois.js";
+import { ContextLivePoiLayer } from "./entities/context-live-pois.js";
 import { GibsLayers } from "./cesium/gibs.js";
 import { discover, context, health, whatsHere } from "./api.js";
 import { LiveSocket, liveUrl } from "./ws.js";
 import { PhotosphereTransition } from "./photosphere/transition.js";
-import { CameraFeedPanel } from "./entities/camera-feed.js";
-
-// #region agent log
-function dbg(location, message, data, hypothesisId) {
-  try {
-    fetch("http://127.0.0.1:7253/ingest/0d443fcc-bf02-4ed0-bbab-47f404bdc834", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "X-Debug-Session-Id": "716b73",
-      },
-      body: JSON.stringify({
-        sessionId: "716b73",
-        runId: "ui",
-        hypothesisId,
-        location,
-        message,
-        data,
-        timestamp: Date.now(),
-      }),
-    }).catch(() => {});
-  } catch {}
-}
-window.__gridland_dbg = dbg;
-// #endregion
+import { EntityDetailPanel } from "./entities/entity-detail.js";
+import { applyEntitySelection } from "./entities/entity-selection.js";
+import { readEntityData } from "./entities/entity-data.js";
+import { ViewportSubscriptionManager, isPhillyArea } from "./viewport.js";
+import { LiveTickScheduler } from "./live-scheduler.js";
+import { LAYER_LEGEND } from "./entities/layer-glyphs.js";
+import { iconDataUrl } from "./entities/layer-icons.js";
 
 const $ = (id) => document.getElementById(id);
 
-function isPhillyArea(lat, lon) {
-  return lat > 39.86 && lat < 40.14 && lon > -75.28 && lon < -74.95;
+function renderLayerLegend() {
+  const el = $("layer-legend");
+  if (!el) return;
+  el.innerHTML = LAYER_LEGEND.map((row) => {
+    const src = iconDataUrl(row.icon, row.color, { badge: row.badge });
+    return `<div class="layer-legend-item">` +
+      `<img src="${src}" alt="" width="18" height="18" />` +
+      `<span>${row.label}</span></div>`;
+  }).join("");
+}
+
+function wireHudToggle() {
+  const hud = $("hud");
+  const btn = $("hud-toggle");
+  if (!hud || !btn) return;
+  btn.addEventListener("click", () => {
+    const collapsed = hud.classList.toggle("hud--collapsed");
+    btn.textContent = collapsed ? "+" : "−";
+    btn.setAttribute("aria-expanded", collapsed ? "false" : "true");
+    btn.title = collapsed ? "Expand controls" : "Minimize controls";
+  });
+}
+
+async function enablePhillyLayers(transit, indego, septaMetro) {
+  const lat = parseFloat($("lat").value);
+  const lon = parseFloat($("lon").value);
+  const radius = parseFloat($("radius").value);
+  if (!isPhillyArea(lat, lon)) return;
+  setLayerCheckbox("transit", true);
+  setLayerCheckbox("septa-metro", true);
+  setLayerCheckbox("indego", true);
+  try {
+    await transit.start();
+    transit.setVisible(true);
+    await indego.start(lat, lon, Math.min(radius, 15));
+    indego.setVisible(true);
+    await septaMetro.refresh(lat, lon, Math.min(radius, 25));
+    septaMetro.setVisible(true);
+  } catch (e) {
+    console.warn("Philly layers", e);
+  }
 }
 
 function setLayerCheckbox(key, on) {
@@ -60,11 +82,59 @@ function setStatus(text, kind = "") {
   el.className = "status " + kind;
 }
 
+function updateLiveHud(transit, aircraft, indego, septaMetro) {
+  const parts = ["live"];
+  if (septaMetro?.dataSource?.show) {
+    parts.push(`Metro ${septaMetro.count()}`);
+  }
+  if (transit.dataSource.show) {
+    const src = transit.sourceStatus();
+    const { bus, rail } = transit.countByKind();
+    const tv = src.transitview === "ok" ? "" : ` tv:${src.transitview || "?"}`;
+    const tr = src.trainview === "ok" ? "" : ` rail-api:${src.trainview || "?"}`;
+    const counts = rail > 0 ? `${bus} buses · ${rail} rail` : `${transit.count()}`;
+    parts.push(`SEPTA ${counts}${tv}${tr}`);
+  }
+  parts.push(`aircraft ${aircraft.count()}`);
+  if (indego.dataSource.show) parts.push(`Indego ${indego.count()}`);
+  setStatus(parts.join(" · "), "ok");
+}
+
+function renderMapStackNote(mapStack) {
+  const el = $("map-stack");
+  if (!el) return;
+  const terrain = mapStack?.terrain === "cesium-world-terrain";
+  const buildings = mapStack?.buildings3d === "cesium-osm-buildings";
+  if (terrain && buildings) {
+    el.className = "map-stack-note ok";
+    el.innerHTML =
+      "<strong>3D map active</strong> — Cesium World Terrain + OSM 3D Buildings. " +
+      "Street view is Mapillary panoramas (not Google); use the chip at low altitude.";
+    return;
+  }
+  el.className = "map-stack-note";
+  el.innerHTML =
+    "<strong>2D basemap only</strong> — flat terrain, no building meshes. " +
+    "Add <code>VITE_CESIUM_ION_ACCESS_TOKEN</code> to <code>.env</code> " +
+    "(free at <a href=\"https://ion.cesium.com/\" target=\"_blank\" rel=\"noopener\">cesium.com/ion</a>) " +
+    "and restart <code>npm run dev</code>. " +
+    "Live layers (cameras, transit, aircraft) still work; street view uses Mapillary when enabled.";
+}
+
 function renderCounts(resp) {
   const counts = resp?.counts_by_source ?? {};
-  const items = Object.entries(counts).map(
-    ([src, n]) => `<span>${src}: ${n}</span>`,
-  );
+  const sources = resp?.sources ?? {};
+  const items = Object.entries(counts).map(([src, n]) => {
+    const st = sources[src];
+    const flag = st?.status && st.status !== "ok" ? ` (${st.status})` : "";
+    return `<span>${src}: ${n}${flag}</span>`;
+  });
+  for (const [src, st] of Object.entries(sources)) {
+    if (counts[src] != null) continue;
+    if (st?.status === "error") {
+      items.push(`<span class="warn">${src}: error</span>`);
+    }
+  }
   $("counts").innerHTML = items.length
     ? `cameras → ${items.join(" ")}`
     : "cameras → 0";
@@ -77,6 +147,11 @@ function renderContext(ctx) {
     return;
   }
   const parts = [];
+  if (ctx.errors && Object.keys(ctx.errors).length) {
+    parts.push(`<h4 class="warn">Context source errors</h4><ul>` +
+      Object.entries(ctx.errors).map(([k, v]) =>
+        `<li>${k}: ${v}</li>`).join("") + `</ul>`);
+  }
   if (ctx.weather) {
     parts.push(`<h4>Weather</h4><div>${ctx.weather.now ?? "?"}` +
       (ctx.weather.temperature_f != null ? ` · ${ctx.weather.temperature_f}°F` : "") +
@@ -123,7 +198,7 @@ function renderContext(ctx) {
   }
   if (ctx.indego_stations?.length) {
     const bikes = ctx.indego_stations.reduce((n, s) => n + (s.bikes ?? 0), 0);
-    parts.push(`<h4>Indego (nearby)</h4><div>${ctx.indego_stations.length} stations · ${bikes} bikes available</div>`);
+    parts.push(`<h4>Indego (context snapshot)</h4><div>${ctx.indego_stations.length} stations · ${bikes} bikes (use Indego layer for live)</div>`);
   }
   if (ctx.service_requests?.length) {
     const counts = {};
@@ -154,6 +229,11 @@ function renderContext(ctx) {
   }
   const odp = ctx.opendataphilly?.layers;
   if (odp) {
+    if (odp.errors && Object.keys(odp.errors).length) {
+      parts.push(`<h4 class="warn">OpenDataPhilly errors</h4><ul>` +
+        Object.entries(odp.errors).map(([k, v]) => `<li>${k}: ${v}</li>`).join("") +
+        `</ul>`);
+    }
     if (odp.crime_incidents?.length) {
       parts.push(`<h4>Crime dispatches (7d, ODP)</h4><ul>` +
         odp.crime_incidents.slice(0, 6).map(c =>
@@ -204,9 +284,14 @@ function renderWhatsHere(payload) {
     `<h4>What's here? (${lat.toFixed(4)}, ${lon.toFixed(4)})</h4>`,
     `<div>${cams.length} cameras · ${panos.length} panos</div>`,
   ];
+  if (payload.errors && Object.keys(payload.errors).length) {
+    parts.push(`<ul class="warn">` +
+      Object.entries(payload.errors).map(([k, v]) => `<li>${k}: ${v}</li>`).join("") +
+      `</ul>`);
+  }
   if (cams.length) {
     parts.push(`<ul>` + cams.slice(0, 5).map(c =>
-      `<li>${c.source}: ${c.name ?? c.id}</li>`).join("") + `</ul>`);
+      `<li>${c.source}: ${c.label ?? c.id}</li>`).join("") + `</ul>`);
   }
   if (ctx?.weather?.now) {
     parts.push(`<div>Weather: ${ctx.weather.now}</div>`);
@@ -215,7 +300,10 @@ function renderWhatsHere(payload) {
   target.hidden = false;
 }
 
-function wireLayerToggles({ cameras, aircraft, satellites, transit, indego, contextPois, gibs }) {
+function wireLayerToggles({
+  cameras, aircraft, satellites, transit, septaMetro, indego, contextPois,
+  contextLivePois, gibs, photosphere, onSatelliteGroup,
+}) {
   document.querySelectorAll('input[type="checkbox"][data-layer]').forEach((el) => {
     el.addEventListener("change", async () => {
       const key = el.dataset.layer;
@@ -234,8 +322,6 @@ function wireLayerToggles({ cameras, aircraft, satellites, transit, indego, cont
               await transit.start();
               transit.setVisible(true);
               setStatus(`SEPTA: ${transit.count()} vehicles`, "ok");
-              dbg("main.js:layers", "transit enabled",
-                  { count: transit.count() }, "philly");
             } catch (e) {
               console.error(e);
               setStatus("SEPTA load failed", "error");
@@ -245,8 +331,29 @@ function wireLayerToggles({ cameras, aircraft, satellites, transit, indego, cont
             transit.setVisible(false);
           }
           break;
+        case "septa-metro":
+          if (on) {
+            try {
+              const lat = parseFloat($("lat").value);
+              const lon = parseFloat($("lon").value);
+              const radius = parseFloat($("radius").value);
+              setStatus("loading SEPTA Metro…", "warn");
+              await septaMetro.refresh(lat, lon, Math.min(radius, 25));
+              septaMetro.setVisible(true);
+              setStatus(`Metro MFL/BSL: ${septaMetro.count()} pins`, "ok");
+            } catch (e) {
+              console.error(e);
+              setStatus("SEPTA Metro load failed", "error");
+            }
+          } else {
+            septaMetro.setVisible(false);
+          }
+          break;
         case "context-pois":
           contextPois.setVisible(on);
+          break;
+        case "context-live-pois":
+          contextLivePois.setVisible(on);
           break;
         case "indego":
           if (on) {
@@ -266,20 +373,22 @@ function wireLayerToggles({ cameras, aircraft, satellites, transit, indego, cont
             indego.setVisible(false);
           }
           break;
+        case "photosphere":
+          photosphere.setEnabled(on);
+          if (on) photosphere.start();
+          else photosphere.stop();
+          break;
         case "satellites":
           if (on) {
             try {
               setStatus("loading satellites…", "warn");
-              await satellites.load("stations");
+              const group = onSatelliteGroup?.() ?? "stations";
+              await satellites.load(group);
               satellites.start();
               satellites.setVisible(true);
               setStatus(`satellites: ${satellites.count()}`, "ok");
-              dbg("main.js:layers", "satellites enabled",
-                  { count: satellites.count() }, "H5");
             } catch (e) {
               console.error(e);
-              dbg("main.js:layers", "satellite load failed",
-                  { error: String(e) }, "H5");
               setStatus("satellite load failed", "error");
             }
           } else {
@@ -293,11 +402,8 @@ function wireLayerToggles({ cameras, aircraft, satellites, transit, indego, cont
           { const k = key.replace("gibs-", "");
             try {
               gibs.setEnabled(k, on);
-              dbg("main.js:layers", `gibs toggled ${k}`,
-                  { on, enabled: gibs.isEnabled(k) }, "H5");
             } catch (e) {
-              dbg("main.js:layers", `gibs failed ${k}`,
-                  { error: String(e) }, "H5");
+              console.error(e);
             }
           }
           break;
@@ -306,48 +412,26 @@ function wireLayerToggles({ cameras, aircraft, satellites, transit, indego, cont
   });
 }
 
-function wireEntitySelection(viewer, { cameras, cameraFeed, aircraft, transit }) {
+function wireEntitySelection(viewer, ctx) {
   viewer.selectedEntityChanged.addEventListener(() => {
     const ent = viewer.selectedEntity;
     if (!ent) {
-      cameraFeed.hide();
+      ctx.entityDetail?.hide?.();
       return;
     }
-    const id = ent.id ?? "";
-    if (typeof id === "string" && id.startsWith("camera:")) {
-      const props = ent.properties;
-      const cam = props?.getValue
-        ? (typeof props.getValue === "function" ? props.getValue(Cesium.JulianDate.now()) : props)
-        : props;
-      cameraFeed.show(cam);
-      dbg("main.js:select", "camera selected", {
-        id, source: cam?.source, hasThumb: !!cam?.thumbnail_url,
-      }, "H-feed");
-      return;
-    }
-    cameraFeed.hide();
-    if (typeof id === "string" && id.startsWith("septa_")) {
-      dbg("main.js:select", "transit selected", { id }, "H-motion");
-    }
+    applyEntitySelection(ent, { viewer, ...ctx });
   });
-
 }
 
 function wireWhatsHereClick(viewer) {
   const handler = new Cesium.ScreenSpaceEventHandler(viewer.scene.canvas);
   handler.setInputAction(async (movement) => {
-    const pickedEntity = viewer.scene.pick(movement.position);
-    if (pickedEntity?.id) {
-      viewer.selectedEntity = pickedEntity.id;
+    const picked = viewer.scene.pick(movement.position);
+    if (picked?.id instanceof Cesium.Entity) {
+      viewer.selectedEntity = picked.id;
+      applyEntitySelection(picked.id, viewer._gridlandSelectionCtx);
       return;
     }
-    // #region agent log
-    dbg("main.js:click", "globe clicked", {
-      pickedEntityKind: pickedEntity?.id?.constructor?.name ?? null,
-      pickedEntityName: pickedEntity?.id?.name ?? null,
-      hasDescription: !!pickedEntity?.id?.description,
-    }, "H1");
-    // #endregion
     const ray = viewer.camera.getPickRay(movement.position);
     if (!ray) return;
     const cart = viewer.scene.globe.pick(ray, viewer.scene);
@@ -367,28 +451,21 @@ function wireWhatsHereClick(viewer) {
 async function bootstrap() {
   const viewer = await createViewer("cesium-container");
   const mapStack = viewer._gridlandMapStack ?? {};
-  // #region agent log
-  dbg("main.js:bootstrap", "viewer created", {
-    infoBox: !!viewer.infoBox,
-    selectionIndicator: !!viewer.selectionIndicator,
-    imageryLayerCount: viewer.imageryLayers.length,
-    imageryProvider: viewer.imageryLayers.get(0)?.imageryProvider?.constructor?.name ?? null,
-    terrainProvider: viewer.terrainProvider?.constructor?.name ?? null,
-    mapStack,
-    camera: cameraState(viewer),
-    cesiumVersion: Cesium.VERSION,
-  }, "H1+H3+H6");
-  // #endregion
+  renderMapStackNote(mapStack);
   if (mapStack.buildings3d === "none") {
-    setStatus("map: OSM 2D · no 3D buildings (add VITE_CESIUM_ION_ACCESS_TOKEN for terrain+buildings)", "warn");
+    setStatus("map: OSM 2D · add VITE_CESIUM_ION_ACCESS_TOKEN for 3D", "warn");
+  } else {
+    setStatus("map: 3D terrain + buildings", "ok");
   }
   const cameras = new CameraLayer(viewer);
   const aircraft = new AircraftLayer(viewer);
   const satellites = new SatelliteLayer(viewer);
   satellites.setVisible(false);
   const transit = new TransitLayer(viewer);
+  const septaMetro = new SeptaMetroLayer(viewer);
   const indego = new IndegoLayer(viewer);
   const contextPois = new ContextPoiLayer(viewer);
+  const contextLivePois = new ContextLivePoiLayer(viewer);
   const gibs = new GibsLayers(viewer);
 
   try {
@@ -398,56 +475,144 @@ async function bootstrap() {
     setStatus("backend unreachable", "error");
   }
 
+  let lastContext = null;
+
   const live = new LiveSocket({
     url: liveUrl("/ws/live"),
     subscription: {
       lat: parseFloat($("lat").value),
       lon: parseFloat($("lon").value),
       distance_nm: 250,
+      transit: isPhillyArea(parseFloat($("lat").value), parseFloat($("lon").value)),
     },
     onMessage: (frame) => {
       if (frame.type === "aircraft") {
         aircraft.handleFrame(frame);
-        if (frame.kind === "snapshot") {
-          dbg("main.js:ws", "aircraft snapshot", {
-            count: frame.count ?? frame.items?.length ?? 0,
-          }, "H-motion");
-        }
+      } else if (frame.type === "transit") {
+        transit.handleFrame(frame);
       }
     },
     onStatus: (s) => {
       const map = { connecting: "live: connecting", open: "live: streaming",
                     closed: "live: reconnecting", error: "live: error" };
       const kindMap = { open: "ok", connecting: "warn", closed: "warn", error: "error" };
-      setStatus(map[s] ?? s, kindMap[s] ?? "");
+      if (s === "open") {
+        updateLiveHud(transit, aircraft, indego, septaMetro);
+      } else {
+        setStatus(map[s] ?? s, kindMap[s] ?? "");
+      }
     },
   });
   live.connect();
 
   const photosphere = new PhotosphereTransition(viewer);
   photosphere.start();
-  const cameraFeed = new CameraFeedPanel("camera-feed");
+  const entityDetail = new EntityDetailPanel("entity-popup");
+  entityDetail.attachViewer(viewer);
+  const selectionCtx = {
+    entityDetail, transit, aircraft, indego, cameras, septaMetro, viewport: null,
+    cameraFeedHooks: {},
+    onSelectCameraId(cameraEntityId) {
+      const ent = cameras.collection.entities.getById(cameraEntityId);
+      if (!ent) return;
+      viewer.selectedEntity = ent;
+      applyEntitySelection(ent, viewer._gridlandSelectionCtx);
+    },
+  };
+  viewer._gridlandSelectionCtx = { viewer, ...selectionCtx };
 
-  wireLayerToggles({ cameras, aircraft, satellites, transit, indego, contextPois, gibs });
-  wireEntitySelection(viewer, { cameras, cameraFeed, aircraft, transit });
+  const scheduler = new LiveTickScheduler({
+    onTick: async () => {
+      if (transit.dataSource.show && transit._enabled) {
+        await transit.refresh();
+      }
+      if (indego.dataSource.show && indego._enabled) {
+        await indego.refresh();
+      }
+      if (septaMetro.dataSource.show) {
+        const lat = parseFloat($("lat").value);
+        const lon = parseFloat($("lon").value);
+        const radius = parseFloat($("radius").value);
+        await septaMetro.refresh(lat, lon, Math.min(radius, 25));
+      }
+      updateLiveHud(transit, aircraft, indego, septaMetro);
+      viewer.scene.requestRender();
+    },
+  });
+  scheduler.start();
+
+  const viewport = new ViewportSubscriptionManager(viewer, (vp) => {
+    const sub = viewport.subscriptionPayload(vp);
+    if (sub) live.setSubscription(sub);
+    transit.setBbox(vp.bbox);
+    if (indego._enabled) {
+      indego.setViewport(vp.lat, vp.lon, Math.min(vp.radiusKm, 15), vp.bbox);
+    }
+    if (vp.philly) {
+      if (transit.dataSource.show && !transit._enabled) void transit.start();
+      if (indego.dataSource.show && !indego._enabled) {
+        void indego.start(vp.lat, vp.lon, Math.min(vp.radiusKm, 15));
+      }
+    } else if (transit.dataSource.show || indego.dataSource.show) {
+      setStatus("live layers: outside Philly — SEPTA/Indego paused", "warn");
+    }
+    updateLiveHud(transit, aircraft, indego, septaMetro);
+  });
+
+  selectionCtx.viewport = viewport;
+  viewer._gridlandSelectionCtx = { viewer, ...selectionCtx };
+
+  wireLayerToggles({
+    cameras, aircraft, satellites, transit, septaMetro, indego, contextPois,
+    contextLivePois, gibs, photosphere,
+    onSatelliteGroup: () => $("sat-group")?.value || "stations",
+  });
+  wireEntitySelection(viewer, selectionCtx);
   wireWhatsHereClick(viewer);
+  wireHudToggle();
+  renderLayerLegend();
+  void enablePhillyLayers(transit, indego, septaMetro);
+
+  if (import.meta.env.DEV) {
+    window.__gridlandTest = {
+      viewer,
+      selectionCtx,
+      async runWhatsHere(lat, lon, radiusKm = 1) {
+        const payload = await whatsHere(lat, lon, radiusKm);
+        renderWhatsHere(payload);
+        return payload;
+      },
+      selectFirstEntity(dataSourceName) {
+        for (let i = 0; i < viewer.dataSources.length; i++) {
+          const ds = viewer.dataSources.get(i);
+          if (ds.name !== dataSourceName) continue;
+          const vals = ds.entities.values;
+          if (!vals.length) return null;
+          const ent = vals[0];
+          viewer.selectedEntity = ent;
+          applyEntitySelection(ent, { viewer, ...selectionCtx });
+          const data = readEntityData(ent);
+          return {
+            id: ent.id,
+            name: ent.name,
+            data,
+            panelHidden: document.getElementById("entity-popup")?.hidden ?? true,
+            panelText: document.getElementById("entity-popup")?.textContent?.slice(0, 200),
+          };
+        }
+        return null;
+      },
+    };
+  }
 
   function flyQuery(preset) {
     const lat = parseFloat($("lat").value);
     const lon = parseFloat($("lon").value);
-    const done = (info) => {
-      dbg("main.js:flyTo", "camera after fly", {
-        preset: preset ?? "scan",
-        ...info,
-        camera: cameraState(viewer),
-        mapStack: viewer._gridlandMapStack,
-      }, "H6");
-    };
     if (preset) {
-      flyToPreset(viewer, lat, lon, preset, done);
+      flyToPreset(viewer, lat, lon, preset, () => viewport.refresh());
     } else {
       const h = heightForScanRadius(parseFloat($("radius").value));
-      flyTo(viewer, lat, lon, h, done);
+      flyTo(viewer, lat, lon, h, () => viewport.refresh());
     }
   }
 
@@ -462,8 +627,10 @@ async function bootstrap() {
         discover(lat, lon, radius),
         context(lat, lon),
       ]);
+      lastContext = c;
       cameras.setAll(d.results);
       contextPois.setFromContext(c);
+      contextLivePois.setFromContext(c);
       contextPois.setVisible(true);
       setLayerCheckbox("context-pois", true);
       renderCounts(d);
@@ -471,40 +638,33 @@ async function bootstrap() {
       if (d.results?.length && radius <= 8) {
         cameras.flyToResults(viewer, { duration: 1.0 });
       }
-      live.setSubscription({ lat, lon, distance_nm: Math.max(50, radius * 2) });
+      const sub = {
+        lat, lon,
+        distance_nm: Math.max(250, radius * 2),
+        transit: isPhillyArea(lat, lon),
+      };
+      live.setSubscription(sub);
       if (isPhillyArea(lat, lon)) {
         setLayerCheckbox("transit", true);
         setLayerCheckbox("indego", true);
+        setLayerCheckbox("septa-metro", true);
         try {
           await transit.start();
           transit.setVisible(true);
-          await transit.refresh();
           await indego.start(lat, lon, Math.min(radius, 15));
           indego.setVisible(true);
+          await septaMetro.refresh(lat, lon, Math.min(radius, 25));
+          septaMetro.setVisible(true);
         } catch (e) {
           console.warn("Philly live layers", e);
         }
       }
-      // #region agent log
-      dbg("main.js:scan", "scan response", {
-        query: { lat, lon, radius },
-        cameras_total: d.results?.length ?? 0,
-        context_pois: contextPois.count(),
-        counts_by_source: d.counts_by_source ?? {},
-        philly_auto_layers: isPhillyArea(lat, lon),
-        context_keys_with_data: Object.fromEntries(
-          Object.entries(c || {}).map(([k, v]) => [
-            k, Array.isArray(v) ? v.length : (v ? 1 : 0)
-          ])
-        ),
-      }, "H2");
-      // #endregion
+      viewport.refresh();
       const poiN = contextPois.count();
-      const indegoN = (c.indego_stations || []).length;
       setStatus(
         `scan ok · ${d.results.length} cameras · ${poiN} pins` +
         (isPhillyArea(lat, lon)
-          ? ` · SEPTA ${transit.count()} · Indego ${indegoN || indego.count()}`
+          ? ` · SEPTA ${transit.count()} · Metro ${septaMetro.count()} · Indego ${indego.count()}`
           : "") +
         ` · aircraft streaming`,
         "ok",

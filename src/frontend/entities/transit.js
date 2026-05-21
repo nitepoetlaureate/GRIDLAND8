@@ -1,32 +1,23 @@
-/** SEPTA live-vehicle layer. Polls /api/septa/vehicles on an interval. */
+/** SEPTA live-vehicle layer — WS snapshots + REST fallback with viewport bbox. */
 import * as Cesium from "cesium";
-import { animateTo, enableGlobeAnimation } from "./motion.js";
+import { bboxQueryParams } from "../geo.js";
+import { transitDetailRows } from "./entity-detail-rows.js";
+import { iconBillboard } from "./layer-icons.js";
+import { busRouteColor, regionalRailColor } from "./septa-colors.js";
+import { animateTo, enableGlobeAnimation, requestSceneRender } from "./motion.js";
 
-const POLL_INTERVAL_MS = 10_000;
 const MOTION_SECONDS = 10;
 
-function description(v) {
-  const rows = [
-    ["Mode", v.kind === "regional_rail" ? "Regional Rail" : "Bus/Trolley"],
-    ["Route", v.route || "—"],
-    ["Destination", v.destination || "—"],
-  ];
-  if (v.kind === "regional_rail") {
-    rows.push(["Train #", v.id?.replace?.("septa_train_", "") || "—"]);
-    rows.push(["Service", v.service || "—"]);
-    rows.push(["Current stop", v.current_stop || "—"]);
-    rows.push(["Next stop", v.next_stop || "—"]);
-    rows.push(["Track", v.track || "—"]);
-  } else {
-    rows.push(["Direction", v.direction || "—"]);
-    rows.push(["Next stop", v.next_stop || "—"]);
-    rows.push(["Seats", v.seat_availability || "—"]);
-  }
-  rows.push(["Late (min)", v.late_min ?? "—"]);
+function descriptionHtml(v) {
+  const rows = transitDetailRows(v);
   return `<table style="font:12px monospace">` +
     rows.map(([k, val]) =>
       `<tr><td style="padding-right:8px;color:#8b95a6">${k}</td><td>${val}</td></tr>`
     ).join("") + `</table>`;
+}
+
+function descriptionProperty(v) {
+  return new Cesium.ConstantProperty(descriptionHtml(v));
 }
 
 export class TransitLayer {
@@ -38,48 +29,53 @@ export class TransitLayer {
     this.dataSource.clustering.enabled = false;
     enableGlobeAnimation(viewer);
     this._index = new Map();
-    this._timer = null;
     this._enabled = false;
+    this._bbox = null;
+    this._lastSources = {};
   }
 
   setVisible(visible) {
     this.dataSource.show = visible;
   }
 
-  async start() {
-    if (this._enabled) {
-      await this._refresh();
-      return;
-    }
-    this._enabled = true;
-    await this._refresh();
-    this._timer = setInterval(() => this._refresh(), POLL_INTERVAL_MS);
+  setBbox(bbox) {
+    this._bbox = bbox;
   }
 
-  async refresh() {
-    await this._refresh();
+  async start() {
+    this._enabled = true;
+    return this.refresh();
   }
 
   stop() {
     this._enabled = false;
-    if (this._timer) {
-      clearInterval(this._timer);
-      this._timer = null;
+  }
+
+  handleFrame(frame) {
+    if (frame?.type !== "transit") return;
+    if (frame.kind === "snapshot") {
+      this._applyPayload(frame.vehicles || [], frame.sources || {});
     }
   }
 
-  async _refresh() {
-    let payload;
+  async refresh() {
+    if (!this._enabled) return this._index.size;
+    let url = "/api/septa/vehicles?";
+    url += bboxQueryParams(this._bbox).replace(/^&/, "");
     try {
-      const r = await fetch("/api/septa/vehicles");
-      if (!r.ok) return;
-      payload = await r.json();
+      const r = await fetch(url.endsWith("?") ? url.slice(0, -1) : url);
+      if (!r.ok) return this._index.size;
+      const payload = await r.json();
+      return this._applyPayload(payload.vehicles || [], payload.sources || {});
     } catch {
-      return;
+      return this._index.size;
     }
-    const sources = payload.sources || {};
+  }
+
+  _applyPayload(vehicles, sources) {
+    this._lastSources = sources;
     const failed = Object.values(sources).some((s) => s === "error");
-    if (failed && !payload.vehicles?.length) return;
+    if (failed && !vehicles.length) return this._index.size;
 
     const seen = new Set();
     const keepIfSourceDown = (kind) => {
@@ -87,32 +83,26 @@ export class TransitLayer {
       if (kind === "bus_trolley" && sources.transitview === "error") return true;
       return false;
     };
-    for (const v of payload.vehicles || []) {
+    for (const v of vehicles) {
+      if (!Number.isFinite(v.lat) || !Number.isFinite(v.lon)) continue;
       seen.add(v.id);
-      const pos = Cesium.Cartesian3.fromDegrees(v.lon, v.lat, 0);
       const isRail = v.kind === "regional_rail";
       const rec = this._index.get(v.id);
       if (rec) {
         animateTo(rec.entity, v.lon, v.lat, 0, MOTION_SECONDS);
-        rec.entity.description = description(v);
+        rec.entity.description = descriptionProperty(v);
+        rec.entity.properties = new Cesium.PropertyBag(v);
+        rec.data = v;
         rec.entity.label.text = this._labelText(v);
-        rec.entity.point.color = colorFor(v);
-        rec.entity.point.pixelSize = isRail ? 12 : 9;
+        applyVehicleGlyph(rec.entity, v, this._labelText(v));
         rec.kind = v.kind;
       } else {
         const entity = this.dataSource.entities.add({
+          id: v.id,
           name: this._labelText(v),
-          description: description(v),
-          position: pos,
-          point: {
-            pixelSize: isRail ? 12 : 9,
-            color: colorFor(v),
-            outlineColor: Cesium.Color.BLACK,
-            outlineWidth: 2,
-            disableDepthTestDistance: Number.POSITIVE_INFINITY,
-            scaleByDistance: new Cesium.NearFarScalar(500, 1.4, 5e5, 0.7),
-            heightReference: Cesium.HeightReference.CLAMP_TO_GROUND,
-          },
+          description: descriptionProperty(v),
+          position: Cesium.Cartesian3.fromDegrees(v.lon, v.lat, 0),
+          ...vehicleGraphics(v),
           label: {
             text: this._labelText(v),
             font: "10px monospace",
@@ -121,12 +111,14 @@ export class TransitLayer {
             outlineWidth: 2,
             style: Cesium.LabelStyle.FILL_AND_OUTLINE,
             pixelOffset: new Cesium.Cartesian2(8, 0),
-            distanceDisplayCondition: new Cesium.DistanceDisplayCondition(0, 8e4),
+            distanceDisplayCondition: new Cesium.DistanceDisplayCondition(
+              0, isRail ? 800_000 : 250_000,
+            ),
             scaleByDistance: new Cesium.NearFarScalar(500, 1, 4e5, 0),
           },
-          properties: v,
+          properties: new Cesium.PropertyBag(v),
         });
-        this._index.set(v.id, { entity, kind: v.kind });
+        this._index.set(v.id, { entity, kind: v.kind, data: v });
       }
     }
     for (const [id, rec] of [...this._index]) {
@@ -135,18 +127,62 @@ export class TransitLayer {
       this.dataSource.entities.remove(rec.entity);
       this._index.delete(id);
     }
+    requestSceneRender(this.viewer);
+    return this._index.size;
   }
 
   _labelText(v) {
-    return `${v.kind === "regional_rail" ? "🚆" : "🚌"} ${v.route}`;
+    if (v.kind === "regional_rail") {
+      const dest = v.destination ? ` → ${v.destination}` : "";
+      return `${v.route || "Rail"}${dest}`;
+    }
+    return `Bus ${v.route || ""}`;
   }
 
   count() {
     return this._index.size;
   }
+
+  getVehicle(id) {
+    return this._index.get(id)?.data ?? null;
+  }
+
+  countByKind() {
+    let bus = 0;
+    let rail = 0;
+    for (const rec of this._index.values()) {
+      if (rec.kind === "regional_rail") rail += 1;
+      else bus += 1;
+    }
+    return { bus, rail, total: bus + rail };
+  }
+
+  sourceStatus() {
+    return this._lastSources;
+  }
 }
 
-function colorFor(v) {
-  if (v.kind === "regional_rail") return Cesium.Color.fromCssColorString("#41a8ff");
-  return Cesium.Color.fromCssColorString("#ff9c41");
+function colorCss(v) {
+  if (v.kind === "regional_rail") return regionalRailColor(v.route);
+  return busRouteColor(v.route);
+}
+
+function vehicleGraphics(v) {
+  const isRail = v.kind === "regional_rail";
+  const css = colorCss(v);
+  const type = isRail ? "train" : "bus";
+  return {
+    billboard: iconBillboard(type, css, isRail ? 1.15 : 1.0),
+  };
+}
+
+function applyVehicleGlyph(entity, v, labelText) {
+  entity.billboard = vehicleGraphics(v).billboard;
+  entity.point = undefined;
+  entity.label.text = labelText;
+  entity.label.show = true;
+  entity.label.pixelOffset = new Cesium.Cartesian2(14, 0);
+  entity.label.distanceDisplayCondition = new Cesium.DistanceDisplayCondition(
+    0, v.kind === "regional_rail" ? 800_000 : 250_000,
+  );
 }

@@ -933,3 +933,73 @@ Backend returned data but map layers failed to render due to parser and UX gaps.
 **Entry ID:** myc_202605201150040185
 Backend returned data but map layers failed to render due to parser and UX gaps.
 ---
+
+### 2026-05-20T18:00:27-04:00 — Composer (primary) — `CHANGELOG.md` [630e5d0]
+**Entry ID:** myc_202605202200280186
+Backend data reached the client but rendering, motion, and photosphere API shape blocked the UI.
+---
+
+### 2026-05-20T18:00:27-04:00 — Composer (primary) — `log.json` [630e5d0]
+**Entry ID:** myc_202605202200280187
+Backend data reached the client but rendering, motion, and photosphere API shape blocked the UI.
+---
+
+### 2026-05-20T18:00:27-04:00 — Composer (primary) — `index.html` [630e5d0]
+**Entry ID:** myc_202605202200280188
+Backend data reached the client but rendering, motion, and photosphere API shape blocked the UI.
+---
+
+### 2026-05-20T18:00:27-04:00 — Composer (primary) — `realtime.py` [630e5d0]
+**Entry ID:** myc_202605202200280189
+Backend data reached the client but rendering, motion, and photosphere API shape blocked the UI.
+---
+
+### 2026-05-20T18:00:27-04:00 — Composer (primary) — `mapillary.py` [630e5d0]
+**Entry ID:** myc_202605202200280190
+Backend data reached the client but rendering, motion, and photosphere API shape blocked the UI.
+---
+
+### 2026-05-20T18:00:27-04:00 — Composer (primary) — `osm.py` [630e5d0]
+**Entry ID:** myc_202605202200280191
+Backend data reached the client but rendering, motion, and photosphere API shape blocked the UI.
+---
+
+### 2026-05-20T18:00:27-04:00 — Composer (primary) — `aircraft.js` [630e5d0]
+**Entry ID:** myc_202605202200280192
+Backend data reached the client but rendering, motion, and photosphere API shape blocked the UI.
+---
+
+### 2026-05-20T18:00:27-04:00 — Composer (primary) — `camera-feed.js` [630e5d0]
+**Entry ID:** myc_202605202200280193
+Backend data reached the client but rendering, motion, and photosphere API shape blocked the UI.
+---
+
+### 2026-05-20T18:00:27-04:00 — Composer (primary) — `indego.js` [630e5d0]
+**Entry ID:** myc_202605202200280194
+Backend data reached the client but rendering, motion, and photosphere API shape blocked the UI.
+---
+
+### 2026-05-20T18:00:27-04:00 — Composer (primary) — `motion.js` [630e5d0]
+**Entry ID:** myc_202605202200280195
+Backend data reached the client but rendering, motion, and photosphere API shape blocked the UI.
+---
+
+### 2026-05-20T18:00:27-04:00 — Composer (primary) — `transit.js` [630e5d0]
+**Entry ID:** myc_202605202200280196
+Backend data reached the client but rendering, motion, and photosphere API shape blocked the UI.
+---
+
+### 2026-05-20T18:00:27-04:00 — Composer (primary) — `main.js` [630e5d0]
+**Entry ID:** myc_202605202200280197
+Backend data reached the client but rendering, motion, and photosphere API shape blocked the UI.
+---
+
+### 2026-05-20T18:00:27-04:00 — Composer (primary) — `transition.js` [630e5d0]
+**Entry ID:** myc_202605202200280198
+Backend data reached the client but rendering, motion, and photosphere API shape blocked the UI.
+---
+
+### 2026-05-20T18:00:27-04:00 — Composer (primary) — `style.css` [630e5d0]
+**Entry ID:** myc_202605202200280199
+Backend data reached the client but rendering, motion, and photosphere API shape blocked the UI.
+---

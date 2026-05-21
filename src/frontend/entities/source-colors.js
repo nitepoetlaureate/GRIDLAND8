@@ -13,6 +13,7 @@ export const CAMERA_SOURCE_COLORS = {
   nps_webcams: "#63e6be",
   mapillary: "#da77f2",
   cam2: "#b197fc",
+  plugin_json: "#ff8787",
 };
 
 export function colorForCameraSource(source) {

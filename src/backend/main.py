@@ -10,8 +10,10 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from backend import __version__
+from backend.api import camera_proxy as camera_proxy_routes
 from backend.api import context as context_routes
 from backend.api import discovery as discovery_routes
+from backend.api import live_status as live_status_routes
 from backend.api import photosphere as photosphere_routes
 from backend.api import realtime as realtime_routes
 from backend.api import satellites as satellite_routes
@@ -44,6 +46,8 @@ def create_app() -> FastAPI:
     app.include_router(satellite_routes.router)
     app.include_router(transit_routes.router)
     app.include_router(whats_here_routes.router)
+    app.include_router(live_status_routes.router)
+    app.include_router(camera_proxy_routes.router)
 
     @app.get("/health", tags=["meta"])
     async def health() -> dict:

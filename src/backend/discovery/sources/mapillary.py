@@ -28,7 +28,10 @@ async def panos_near(lat: float, lon: float, radius_m: int = 200,
     if not s.mapillary_api_key:
         return []
     params = {
-        "fields": "id,captured_at,compass_angle,geometry,sequence_id,is_pano,thumb_2048_url",
+        "fields": (
+            "id,captured_at,compass_angle,geometry,sequence_id,is_pano,"
+            "thumb_2048_url,thumb_original_url"
+        ),
         "lat": lat,
         "lng": lon,
         "radius": max(10, min(int(radius_m), 50)),
@@ -50,8 +53,11 @@ async def panos_near(lat: float, lon: float, radius_m: int = 200,
         coords = geom.get("coordinates")
         if not (isinstance(coords, list) and len(coords) == 2):
             continue
+        if not rec.get("is_pano"):
+            continue
+        img_id = rec.get("id")
         out.append({
-            "id": rec.get("id"),
+            "id": img_id,
             "lat": coords[1],
             "lon": coords[0],
             "captured_at": rec.get("captured_at"),
@@ -59,5 +65,9 @@ async def panos_near(lat: float, lon: float, radius_m: int = 200,
             "sequence_id": rec.get("sequence_id"),
             "is_pano": rec.get("is_pano"),
             "thumb_2048_url": rec.get("thumb_2048_url"),
+            "thumb_original_url": rec.get("thumb_original_url"),
+            "viewer_url": f"https://www.mapillary.com/app/?pKey={img_id}&focus=photo"
+                if img_id else None,
+            "pano_url": rec.get("thumb_original_url") or rec.get("thumb_2048_url"),
         })
     return out

@@ -1,7 +1,8 @@
 /** Indego bike-share stations — GBFS via /api/indego/stations */
 import * as Cesium from "cesium";
-
-const POLL_INTERVAL_MS = 60_000;
+import { bboxQueryParams } from "../geo.js";
+import { iconBillboard } from "./layer-icons.js";
+import { requestSceneRender } from "./motion.js";
 
 function description(s) {
   return `<table style="font:12px monospace">` +
@@ -23,99 +24,105 @@ export class IndegoLayer {
     viewer.dataSources.add(this.dataSource);
     this.dataSource.show = false;
     this._index = new Map();
-    this._timer = null;
     this._enabled = false;
+    this._lat = 39.9526;
+    this._lon = -75.1652;
+    this._radiusKm = 15;
+    this._bbox = null;
   }
 
   setVisible(visible) {
     this.dataSource.show = visible;
   }
 
-  async start(lat, lon, radiusKm = 15) {
+  setViewport(lat, lon, radiusKm, bbox) {
     this._lat = lat;
     this._lon = lon;
     this._radiusKm = radiusKm;
-    if (this._enabled) {
-      await this._refresh();
-      return;
-    }
+    this._bbox = bbox;
+  }
+
+  async start(lat, lon, radiusKm = 15) {
+    this.setViewport(lat, lon, radiusKm, null);
     this._enabled = true;
-    await this._refresh();
-    this._timer = setInterval(() => this._refresh(), POLL_INTERVAL_MS);
+    return this.refresh();
   }
 
   stop() {
     this._enabled = false;
-    if (this._timer) {
-      clearInterval(this._timer);
-      this._timer = null;
-    }
   }
 
-  async _refresh() {
+  async refresh() {
+    if (!this._enabled) return this._index.size;
     const q = new URLSearchParams({
       lat: String(this._lat),
       lon: String(this._lon),
       radius_km: String(this._radiusKm),
     });
+    const extra = bboxQueryParams(this._bbox);
+    if (extra) {
+      for (const [k, v] of new URLSearchParams(extra.slice(1))) {
+        q.set(k, v);
+      }
+    }
     let payload;
     try {
       const r = await fetch(`/api/indego/stations?${q}`);
-      if (!r.ok) return;
+      if (!r.ok) return this._index.size;
       payload = await r.json();
     } catch {
-      return;
+      return this._index.size;
     }
     const seen = new Set();
     for (const s of payload.stations || []) {
+      if (!Number.isFinite(s.lat) || !Number.isFinite(s.lon)) continue;
       const id = s.station_id;
       seen.add(id);
       const pos = Cesium.Cartesian3.fromDegrees(s.lon, s.lat, 0);
       const bikes = s.bikes ?? 0;
-      const color = bikes > 0
-        ? Cesium.Color.fromCssColorString("#3dd68c")
-        : Cesium.Color.fromCssColorString("#6b7280");
+      const fill = bikes > 0 ? "#3dd68c" : "#6b7280";
       const existing = this._index.get(id);
       if (existing) {
-        existing.position = pos;
-        existing.description = description(s);
-        existing.point.color = color;
-        existing.label.text = `🚲 ${bikes}`;
+        existing.entity.position = pos;
+        existing.entity.description = description(s);
+        existing.entity.billboard = iconBillboard("bike", fill, 0.95);
+        existing.entity.point = undefined;
+        existing.entity.label.text = String(bikes);
+        existing.data = s;
       } else {
         const entity = this.dataSource.entities.add({
+          id: `indego:${id}`,
           name: s.name,
           description: description(s),
           position: pos,
-          point: {
-            pixelSize: 7,
-            color,
-            outlineColor: Cesium.Color.BLACK,
-            outlineWidth: 1,
-            disableDepthTestDistance: Number.POSITIVE_INFINITY,
-            scaleByDistance: new Cesium.NearFarScalar(400, 1.3, 4e5, 0.65),
-            heightReference: Cesium.HeightReference.CLAMP_TO_GROUND,
-          },
+          billboard: iconBillboard("bike", fill, 0.95),
           label: {
-            text: `🚲 ${bikes}`,
+            text: String(bikes),
             font: "10px monospace",
             fillColor: Cesium.Color.WHITE,
             outlineColor: Cesium.Color.BLACK,
             outlineWidth: 2,
             style: Cesium.LabelStyle.FILL_AND_OUTLINE,
             pixelOffset: new Cesium.Cartesian2(8, 0),
-            distanceDisplayCondition: new Cesium.DistanceDisplayCondition(0, 12_000),
+            distanceDisplayCondition: new Cesium.DistanceDisplayCondition(0, 80_000),
           },
-          properties: s,
+          properties: new Cesium.PropertyBag(s),
         });
-        this._index.set(id, entity);
+        this._index.set(id, { entity, data: s });
       }
     }
-    for (const [id, entity] of [...this._index]) {
+    for (const [id, rec] of [...this._index]) {
       if (!seen.has(id)) {
-        this.dataSource.entities.remove(entity);
+        this.dataSource.entities.remove(rec.entity);
         this._index.delete(id);
       }
     }
+    requestSceneRender(this.viewer);
+    return this._index.size;
+  }
+
+  getStation(stationId) {
+    return this._index.get(stationId)?.data ?? null;
   }
 
   count() {

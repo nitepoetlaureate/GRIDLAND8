@@ -30,7 +30,7 @@ _TRAINVIEW_SAMPLE = [
     {"lat": "39.94", "lon": "-75.19", "trainno": "401", "service": "LOCAL",
      "dest": "Airport", "currentstop": "Penn Medicine", "nextstop": "Eastwick",
      "line": "Airport", "heading": "236", "late": 1, "TRACK": "1",
-     "consist": "302,410,422"},
+     "SOURCE": "Airport", "consist": "302,410,422"},
 ]
 
 
@@ -47,6 +47,25 @@ def test_septa_parse_trainview():
     assert len(out) == 1
     assert out[0]["kind"] == "regional_rail"
     assert out[0]["destination"] == "Airport"
+
+
+def test_septa_bbox_keeps_regional_rail(client, monkeypatch):
+    async def fake_get(url, **kw):
+        return _TRANSITVIEW_SAMPLE if "TransitViewAll" in url else _TRAINVIEW_SAMPLE
+
+    async def fake_train(ttl_s):
+        return _TRAINVIEW_SAMPLE
+
+    monkeypatch.setattr(septa_vehicles, "get_json", fake_get)
+    monkeypatch.setattr(septa_vehicles, "_get_trainview_payload", fake_train)
+    # Tiny bbox around one bus only — rail should still be returned
+    r = client.get(
+        "/api/septa/vehicles",
+        params={"min_lat": 39.94, "max_lat": 39.96, "min_lon": -75.20, "max_lon": -75.18},
+    )
+    body = r.json()
+    assert body["regional_rail"] == 1
+    assert body["count"] >= 1
 
 
 @pytest.mark.asyncio

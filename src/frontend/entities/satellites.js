@@ -79,7 +79,7 @@ export class SatelliteLayer {
           showBackground: true,
           backgroundColor: Cesium.Color.BLACK.withAlpha(0.5),
           pixelOffset: new Cesium.Cartesian2(0, -14),
-          distanceDisplayCondition: new Cesium.DistanceDisplayCondition(0, 4.0e7),
+          distanceDisplayCondition: new Cesium.DistanceDisplayCondition(0, 500_000),
         },
       });
       this.records.push({ satrec, entity });

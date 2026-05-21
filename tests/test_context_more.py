@@ -78,8 +78,11 @@ async def test_firms_with_key(monkeypatch):
 
 @pytest.mark.asyncio
 async def test_openaq_skipped_without_key(monkeypatch):
+    class _NoOpenAqKey:
+        openaq_api_key = None
+
     monkeypatch.delenv("OPENAQ_API_KEY", raising=False)
-    reset_settings_cache()
+    monkeypatch.setattr(openaq, "get_settings", lambda: _NoOpenAqKey())
     out = await openaq.nearby_aq(39.95, -75.16)
     assert out == []
     reset_settings_cache()

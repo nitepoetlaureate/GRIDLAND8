@@ -95,11 +95,11 @@ export async function createViewer(containerId, options = {}) {
     timeline: false,
     animation: false,
     fullscreenButton: false,
-    infoBox: true,
+    infoBox: false,
     selectionIndicator: true,
     terrainProvider: new Cesium.EllipsoidTerrainProvider(),
     // Retain sharp imagery when zoomed in (default can feel mushy).
-    requestRenderMode: false,
+    requestRenderMode: true,
   });
 
   configureCameraController(viewer);
@@ -136,6 +136,28 @@ export function flyTo(viewer, lat, lon, heightMeters = VIEW_PRESETS.metro, onCom
 
 export function flyToPreset(viewer, lat, lon, preset, onComplete) {
   const h = VIEW_PRESETS[preset] ?? VIEW_PRESETS.metro;
+  if (preset === "street") {
+    const dest = Cesium.Cartesian3.fromDegrees(lon, lat, h);
+    viewer.camera.flyTo({
+      destination: dest,
+      orientation: {
+        heading: viewer.camera.heading,
+        pitch: Cesium.Math.toRadians(-35),
+        roll: 0,
+      },
+      duration: 1.2,
+      complete: () => {
+        const c = viewer.camera.positionCartographic;
+        onComplete?.({
+          lat,
+          lon,
+          requestedHeightM: h,
+          actualHeightM: c != null ? Math.round(c.height) : null,
+        });
+      },
+    });
+    return;
+  }
   flyTo(viewer, lat, lon, h, onComplete);
 }
 

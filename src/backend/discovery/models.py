@@ -11,7 +11,7 @@ SourceName = Literal[
     "caltrans", "wsdot", "n511ny",
     "livecam",
     "nyctmc", "castlerock_511", "nps_webcams",
-    "penndot", "cam2",
+    "penndot", "cam2", "plugin_json",
 ]
 
 PublicationStatus = Literal[
@@ -50,8 +50,15 @@ class CameraResult(BaseModel):
         return v
 
 
+class SourceStatus(BaseModel):
+    count: int = 0
+    status: Literal["ok", "empty", "error", "skipped"] = "ok"
+    detail: str | None = None
+
+
 class DiscoveryResponse(BaseModel):
     query: dict
     results: list[CameraResult]
     fetched_at: str
     counts_by_source: dict[str, int]
+    sources: dict[str, SourceStatus] = Field(default_factory=dict)

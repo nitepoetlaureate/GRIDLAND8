@@ -1,6 +1,7 @@
 /** Camera entity collection. Each result is a billboard pinned to lat/lon. */
 import * as Cesium from "cesium";
 import { colorForCameraSource } from "./source-colors.js";
+import { iconBillboard } from "./layer-icons.js";
 
 function escape(s) {
   return String(s ?? "").replace(/[&<>"']/g, (c) => ({
@@ -35,6 +36,7 @@ function cameraDescription(r) {
 export class CameraLayer {
   constructor(viewer) {
     this.viewer = viewer;
+    this._byId = new Map();
     this.collection = new Cesium.CustomDataSource("cameras");
     viewer.dataSources.add(this.collection);
     this.collection.clustering.enabled = true;
@@ -44,23 +46,26 @@ export class CameraLayer {
 
   clear() {
     this.collection.entities.removeAll();
+    this._byId.clear();
+  }
+
+  get(id) {
+    return this._byId.get(id) ?? null;
   }
 
   add(result) {
+    const eid = `camera:${result.id}`;
+    this._byId.set(eid, result);
     this.collection.entities.add({
-      id: `camera:${result.id}`,
+      id: eid,
       name: result.label || result.id,
       description: cameraDescription(result),
       position: Cesium.Cartesian3.fromDegrees(result.lon, result.lat, 0),
-      point: {
-        pixelSize: 11,
-        color: colorForCameraSource(result.source),
-        outlineColor: Cesium.Color.BLACK,
-        outlineWidth: 2,
-        disableDepthTestDistance: Number.POSITIVE_INFINITY,
-        scaleByDistance: new Cesium.NearFarScalar(800, 1.5, 2.5e6, 0.75),
-        heightReference: Cesium.HeightReference.CLAMP_TO_GROUND,
-      },
+      billboard: iconBillboard(
+        "camera",
+        colorForCameraSource(result.source).toCssColorString(),
+        1.05,
+      ),
       label: {
         text: (result.label || result.id || "").slice(0, 42),
         font: "11px monospace",
@@ -72,7 +77,7 @@ export class CameraLayer {
         distanceDisplayCondition: new Cesium.DistanceDisplayCondition(0, 1.2e5),
         scaleByDistance: new Cesium.NearFarScalar(800, 1, 8e5, 0),
       },
-      properties: result,
+      properties: new Cesium.PropertyBag(result),
     });
   }
 

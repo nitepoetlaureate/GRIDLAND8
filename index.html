@@ -11,6 +11,7 @@
     <div id="hud">
       <header>
         <span class="brand">GRIDLAND</span>
+        <button type="button" id="hud-toggle" class="hud-toggle" title="Minimize controls" aria-expanded="true">−</button>
         <span id="status" class="status">connecting…</span>
       </header>
       <section id="panel">
@@ -28,23 +29,38 @@
           <button type="button" data-view="orbit" title="~50 km">orbit</button>
         </div>
         <div id="counts" class="counts"></div>
+        <div id="map-stack" class="map-stack-note" aria-live="polite"></div>
+        <fieldset class="map-legend">
+          <legend>Map symbols</legend>
+          <div id="layer-legend" class="layer-legend"></div>
+        </fieldset>
         <fieldset class="layers">
           <legend>Layers</legend>
           <label><input type="checkbox" data-layer="cameras" checked /> Cameras</label>
           <label><input type="checkbox" data-layer="context-pois" checked /> Civic / context POIs</label>
           <label><input type="checkbox" data-layer="aircraft" checked /> Aircraft</label>
-          <label><input type="checkbox" data-layer="transit" /> SEPTA live transit (Philly)</label>
+          <label><input type="checkbox" data-layer="transit" checked /> SEPTA live transit (Philly)</label>
+          <label><input type="checkbox" data-layer="septa-metro" checked /> SEPTA Metro MFL / BSL</label>
           <label><input type="checkbox" data-layer="indego" /> Indego bike share (Philly)</label>
-          <label><input type="checkbox" data-layer="satellites" /> Satellites (ISS+stations)</label>
+          <label><input type="checkbox" data-layer="photosphere" checked /> Mapillary street view (opt-in dock)</label>
+          <label><input type="checkbox" data-layer="context-live-pois" /> Fires / quakes / AQ / METAR</label>
+          <label><input type="checkbox" data-layer="satellites" /> Satellites
+            <select id="sat-group" title="TLE catalog">
+              <option value="stations" selected>stations</option>
+              <option value="active">active</option>
+              <option value="weather">weather</option>
+            </select>
+          </label>
           <label><input type="checkbox" data-layer="gibs-truecolor" /> Clouds (MODIS true color)</label>
           <label><input type="checkbox" data-layer="gibs-fires" /> Active fires (VIIRS)</label>
           <label><input type="checkbox" data-layer="gibs-aerosol" /> Aerosol (MODIS AOD)</label>
         </fieldset>
         <div id="context" class="context"></div>
-        <div id="camera-feed" class="camera-feed" hidden></div>
+        <div id="camera-feed" class="camera-feed" hidden aria-hidden="true"></div>
         <div id="whats-here" class="whats-here" hidden></div>
       </section>
     </div>
+    <div id="entity-popup" class="entity-popup" hidden aria-live="polite" role="dialog" aria-label="Selected item"></div>
     <div id="cesium-container"></div>
     <script type="module" src="/src/frontend/main.js"></script>
   </body>

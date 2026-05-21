@@ -62,6 +62,7 @@ class Settings(BaseSettings):
     mapillary_api_key: str | None = None
     wsdot_api_key: str | None = None
     n511ny_api_key: str | None = None
+    n511pa_api_key: str | None = None
     greynoise_api_key: str | None = None
     opensky_username: str | None = None
     opensky_password: str | None = None

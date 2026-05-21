@@ -1,0 +1,17 @@
+{
+  "cameras": [
+    {
+      "id": "manual-ip-example",
+      "label": "Example LAN MJPEG camera",
+      "lat": 39.9526,
+      "lon": -75.1652,
+      "source": "plugin_json",
+      "publication_status": "operator_published",
+      "stream": {
+        "type": "mjpeg",
+        "url": "http://192.168.1.100/mjpg/video.mjpg"
+      },
+      "tags": { "notes": "Copy this file, set real lat/lon and URL, remove .example from filename" }
+    }
+  ]
+}

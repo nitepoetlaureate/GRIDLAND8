@@ -1,28 +1,27 @@
 /** Aircraft entity collection. Handles snapshot + diff frames from /ws/live. */
 import * as Cesium from "cesium";
-import { animateTo, enableGlobeAnimation } from "./motion.js";
+import { aircraftDetailRows } from "./aircraft-detail-rows.js";
+import { readEntityData } from "./entity-data.js";
+import { aircraftIconType, iconBillboard } from "./layer-icons.js";
+import { animateTo, enableGlobeAnimation, requestSceneRender } from "./motion.js";
 
 const MOTION_SECONDS = 10;
-
 const STALE_MS = 60_000;
 
 function aircraftDescription(ac) {
-  const rows = [
-    ["ICAO24", ac.icao24],
-    ["Callsign", ac.callsign?.trim() || "—"],
-    ["Lat/Lon", `${ac.lat?.toFixed?.(5)}, ${ac.lon?.toFixed?.(5)}`],
-    ["Altitude", ac.alt_m != null ? `${Math.round(ac.alt_m)} m / ${Math.round(ac.alt_m * 3.281)} ft` : "—"],
-    ["Speed", ac.velocity_ms != null
-      ? `${Math.round(ac.velocity_ms / 0.514444)} kt` : "—"],
-    ["Heading", ac.track_deg != null ? `${Math.round(ac.track_deg)}°` : "—"],
-    ["On ground", ac.on_ground ? "yes" : "no"],
-    ["Country", ac.origin_country || "—"],
-  ];
-  return `<table style="font:12px monospace">` +
+  const rows = aircraftDetailRows(ac);
+  return `<table class="entity-detail-table">` +
     rows.map(([k, v]) =>
       `<tr><td style="padding-right:8px;color:#8b95a6">${k}</td><td>${v}</td></tr>`
-    ).join("") +
-    `</table>`;
+    ).join("") + `</table>`;
+}
+
+function colorForAircraft(ac) {
+  const cat = (ac.category || "").toUpperCase();
+  if (ac.on_ground) return "#8b95a6";
+  if (cat.startsWith("H")) return "#74c0fc";
+  if (cat.startsWith("B")) return "#ffa94d";
+  return "#41d692";
 }
 
 export class AircraftLayer {
@@ -38,36 +37,42 @@ export class AircraftLayer {
     const now = Date.now();
     if (frame.kind === "snapshot") this._applySnapshot(frame, now);
     else if (frame.kind === "diff") this._applyDiff(frame, now);
-    // Refresh lastSeen for all tracked aircraft on every frame (diffs often empty).
     for (const rec of this._index.values()) rec.lastSeen = now;
     this._expireStale();
+    requestSceneRender(this.viewer);
   }
 
   _applySnapshot(frame, now) {
     this.collection.entities.removeAll();
     this._index.clear();
     for (const ac of frame.items || []) {
-      this._index.set(ac.icao24, { entity: this._add(ac), lastSeen: now });
+      if (!Number.isFinite(ac.lat) || !Number.isFinite(ac.lon)) continue;
+      const entity = this._add(ac);
+      if (entity) this._index.set(ac.icao24, { entity, lastSeen: now, data: ac });
     }
   }
 
   _applyDiff(frame, now) {
     for (const ac of frame.added ?? []) {
+      if (!Number.isFinite(ac.lat) || !Number.isFinite(ac.lon)) continue;
       const rec = this._index.get(ac.icao24);
       if (rec) {
         this._update(rec.entity, ac);
         rec.lastSeen = now;
       } else {
-        this._index.set(ac.icao24, { entity: this._add(ac), lastSeen: now });
+        const entity = this._add(ac);
+        if (entity) this._index.set(ac.icao24, { entity, lastSeen: now, data: ac });
       }
     }
     for (const ac of frame.updated ?? []) {
+      if (!Number.isFinite(ac.lat) || !Number.isFinite(ac.lon)) continue;
       const rec = this._index.get(ac.icao24);
       if (rec) {
         this._update(rec.entity, ac);
         rec.lastSeen = now;
       } else {
-        this._index.set(ac.icao24, { entity: this._add(ac), lastSeen: now });
+        const entity = this._add(ac);
+        if (entity) this._index.set(ac.icao24, { entity, lastSeen: now, data: ac });
       }
     }
     for (const icao24 of frame.removed ?? []) {
@@ -90,20 +95,14 @@ export class AircraftLayer {
   }
 
   _add(ac) {
+    if (!Number.isFinite(ac.lat) || !Number.isFinite(ac.lon)) return null;
+    const css = colorForAircraft(ac);
     return this.collection.entities.add({
+      id: `aircraft:${ac.icao24}`,
       name: this._labelText(ac),
       description: aircraftDescription(ac),
       position: Cesium.Cartesian3.fromDegrees(ac.lon, ac.lat, ac.alt_m ?? 0),
-      point: {
-        pixelSize: ac.on_ground ? 7 : 9,
-        color: ac.on_ground
-          ? Cesium.Color.fromCssColorString("#8b95a6")
-          : Cesium.Color.fromCssColorString("#41d692"),
-        outlineColor: Cesium.Color.BLACK,
-        outlineWidth: 2,
-        disableDepthTestDistance: Number.POSITIVE_INFINITY,
-        scaleByDistance: new Cesium.NearFarScalar(2e3, 1.5, 3e6, 0.6),
-      },
+      billboard: iconBillboard(aircraftIconType(ac), css, ac.on_ground ? 0.85 : 1.0),
       label: {
         text: this._labelText(ac),
         font: "11px monospace",
@@ -111,28 +110,49 @@ export class AircraftLayer {
         outlineColor: Cesium.Color.BLACK,
         outlineWidth: 2,
         style: Cesium.LabelStyle.FILL_AND_OUTLINE,
-        pixelOffset: new Cesium.Cartesian2(8, -8),
-        distanceDisplayCondition: new Cesium.DistanceDisplayCondition(0, 5e5),
+        pixelOffset: new Cesium.Cartesian2(12, -10),
+        distanceDisplayCondition: new Cesium.DistanceDisplayCondition(0, 2e6),
       },
-      properties: ac,
+      properties: new Cesium.PropertyBag(ac),
     });
   }
 
+  getByEntity(entity) {
+    if (!entity) return null;
+    for (const rec of this._index.values()) {
+      if (rec.entity === entity) return rec.data;
+    }
+    return readEntityData(entity);
+  }
+
   _update(entity, ac) {
+    if (!Number.isFinite(ac.lat) || !Number.isFinite(ac.lon)) return;
+    const rec = this._index.get(ac.icao24);
+    if (rec) rec.data = ac;
     animateTo(entity, ac.lon, ac.lat, ac.alt_m ?? 0, MOTION_SECONDS);
     entity.label.text = this._labelText(ac);
     entity.name = this._labelText(ac);
     entity.description = aircraftDescription(ac);
-    entity.point.color = ac.on_ground
-      ? Cesium.Color.fromCssColorString("#8b95a6")
-      : Cesium.Color.fromCssColorString("#41d692");
+    entity.properties = new Cesium.PropertyBag(ac);
+    entity.billboard = iconBillboard(
+      aircraftIconType(ac), colorForAircraft(ac), ac.on_ground ? 0.85 : 1.0,
+    );
   }
 
   _labelText(ac) {
-    return ac.callsign?.trim() || ac.icao24.toUpperCase();
+    const type = ac.aircraft_type || "";
+    const cs = ac.callsign?.trim();
+    if (cs && type) return `${cs} · ${type}`;
+    if (cs) return cs;
+    if (type) return type;
+    return ac.icao24.toUpperCase();
   }
 
   setVisible(visible) {
     this.collection.show = visible;
+  }
+
+  count() {
+    return this._index.size;
   }
 }

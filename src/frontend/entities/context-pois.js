@@ -126,19 +126,6 @@ export class ContextPoiLayer {
         pixelSize: 7,
       });
     }
-    for (const st of ctx.indego_stations || []) {
-      addPoint(this.dataSource, {
-        id: `indego-ctx:${st.station_id}`,
-        lat: st.lat, lon: st.lon,
-        color: POI_COLORS.indego,
-        name: st.name || "Indego",
-        description: tableHtml([
-          ["Bikes", st.bikes], ["Docks", st.docks],
-          ["Renting", st.is_renting], ["Returning", st.is_returning],
-        ]),
-        pixelSize: 10,
-      });
-    }
   }
 
   setVisible(visible) {

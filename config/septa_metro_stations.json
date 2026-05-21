@@ -1,0 +1,27 @@
+{
+  "MFL": [
+    {"id": "mfl_69th", "name": "69th St Transit Center", "lat": 39.9623, "lon": -75.2582},
+    {"id": "mfl_63rd", "name": "63rd St", "lat": 39.9578, "lon": -75.2436},
+    {"id": "mfl_46th", "name": "46th St", "lat": 39.9565, "lon": -75.2102},
+    {"id": "mfl_30th", "name": "30th St", "lat": 39.9558, "lon": -75.1820},
+    {"id": "mfl_15th", "name": "15th St / City Hall", "lat": 39.9522, "lon": -75.1652},
+    {"id": "mfl_13th", "name": "13th St", "lat": 39.9521, "lon": -75.1600},
+    {"id": "mfl_11th", "name": "11th St", "lat": 39.9520, "lon": -75.1558},
+    {"id": "mfl_8th", "name": "8th St", "lat": 39.9519, "lon": -75.1510},
+    {"id": "mfl_5th", "name": "5th St / Independence Hall", "lat": 39.9495, "lon": -75.1500},
+    {"id": "mfl_2nd", "name": "2nd St", "lat": 39.9488, "lon": -75.1435},
+    {"id": "mfl_frankford", "name": "Frankford Transit Center", "lat": 40.0228, "lon": -75.0816},
+    {"id": "mfl_girard", "name": "Girard", "lat": 39.9728, "lon": -75.1345}
+  ],
+  "BSL": [
+    {"id": "bsl_fern_rock", "name": "Fern Rock Transit Center", "lat": 40.0428, "lon": -75.1513},
+    {"id": "bsl_erie", "name": "Erie", "lat": 40.0125, "lon": -75.1508},
+    {"id": "bsl_girard", "name": "Girard", "lat": 39.9720, "lon": -75.1595},
+    {"id": "bsl_race_vine", "name": "Race-Vine", "lat": 39.9555, "lon": -75.1590},
+    {"id": "bsl_city_hall", "name": "City Hall", "lat": 39.9523, "lon": -75.1655},
+    {"id": "bsl_walnut_locust", "name": "Walnut-Locust", "lat": 39.9480, "lon": -75.1680},
+    {"id": "bsl_ellsworth_federal", "name": "Ellsworth-Federal", "lat": 39.9380, "lon": -75.1720},
+    {"id": "bsl_spring_garden", "name": "Spring Garden", "lat": 39.9610, "lon": -75.1605},
+    {"id": "bsl_nrg", "name": "NRG Station", "lat": 39.9054, "lon": -75.1724}
+  ]
+}

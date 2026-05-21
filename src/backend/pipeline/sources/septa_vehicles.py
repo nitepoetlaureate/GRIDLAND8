@@ -12,6 +12,7 @@ import asyncio
 import logging
 
 from backend.settings import get_settings
+from backend.shared.cache import default_cache, make_key
 from backend.shared.http import get_json
 
 log = logging.getLogger(__name__)
@@ -84,13 +85,19 @@ def parse_trainview(payload: list | None) -> list[dict]:
         lon = _safe_float(t.get("lon"))
         if lat is None or lon is None:
             continue
+        if abs(lat) < 0.01 and abs(lon) < 0.01:
+            continue
+        trainno = t.get("trainno")
+        if trainno is None or str(trainno).strip() in {"", "None"}:
+            continue
         out.append({
             "kind": "regional_rail",
-            "id": f"septa_train_{t.get('trainno')}",
+            "id": f"septa_train_{trainno}",
             "lat": lat, "lon": lon,
             "route": str(t.get("line") or ""),
             "destination": t.get("dest") or "",
             "service": t.get("service") or "",
+            "source_station": t.get("SOURCE") or "",
             "current_stop": t.get("currentstop") or "",
             "next_stop": t.get("nextstop") or "",
             "heading": _safe_float(t.get("heading")),
@@ -101,12 +108,25 @@ def parse_trainview(payload: list | None) -> list[dict]:
     return out
 
 
+async def _get_trainview_payload(ttl_s: float) -> list | None:
+    """TrainView returns a JSON array; do not cache empty lists (stale no-trains)."""
+    cache = default_cache()
+    key = make_key("GET", TRAINVIEW)
+    hit = cache.get(key)
+    if isinstance(hit, list) and len(hit) > 0:
+        return hit
+    raw = await get_json(TRAINVIEW, ttl_s=0)
+    if isinstance(raw, list) and len(raw) > 0 and ttl_s > 0:
+        cache.set(key, raw, ttl_s)
+    return raw if isinstance(raw, list) else None
+
+
 async def all_vehicles() -> tuple[list[dict], dict[str, str]]:
     """Return (vehicles, source_status). status values: ok | empty | error."""
     s = get_settings()
     tv, rr = await asyncio.gather(
         get_json(TRANSITVIEW, ttl_s=s.cache_ttl_septa_vehicles_s),
-        get_json(TRAINVIEW, ttl_s=s.cache_ttl_septa_vehicles_s),
+        _get_trainview_payload(s.cache_ttl_septa_vehicles_s),
         return_exceptions=True,
     )
     out: list[dict] = []

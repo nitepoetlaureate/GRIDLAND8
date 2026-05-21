@@ -6,13 +6,15 @@ import logging
 from collections import Counter
 
 from backend.compliance.guardrails import filter_compliant
-from backend.discovery.models import CameraResult, DiscoveryResponse
+from backend.discovery.models import CameraResult, DiscoveryResponse, SourceStatus
+from backend.discovery.plugins import json_cameras
 from backend.discovery.sources import (
     caltrans,
     cam2,
     castlerock_511,
     livecams,
     n511ny,
+    n511pa,
     nps_webcams,
     nyctmc,
     osm,
@@ -20,30 +22,6 @@ from backend.discovery.sources import (
     wsdot,
 )
 from backend.shared.http import utc_now_iso
-
-# #region agent log
-import json as _json
-import time as _time
-from pathlib import Path as _Path
-_DBG = _Path("/Users/michaelraftery/GRIDLAND8/.cursor/debug-716b73.log")
-
-
-def _dbg(location: str, message: str, data: dict, hypothesis_id: str) -> None:
-    try:
-        _DBG.parent.mkdir(parents=True, exist_ok=True)
-        with _DBG.open("a") as f:
-            f.write(_json.dumps({
-                "sessionId": "716b73",
-                "runId": "discovery",
-                "hypothesisId": hypothesis_id,
-                "location": location,
-                "message": message,
-                "data": data,
-                "timestamp": int(_time.time() * 1000),
-            }) + "\n")
-    except Exception:
-        pass
-# #endregion
 
 log = logging.getLogger(__name__)
 
@@ -57,7 +35,9 @@ _SOURCES = (
     castlerock_511.search,
     nps_webcams.search,
     penndot.search,
+    n511pa.search,
     cam2.search,
+    json_cameras.search,
 )
 _SOURCE_NAMES = (
     "osm",
@@ -69,46 +49,50 @@ _SOURCE_NAMES = (
     "castlerock_511",
     "nps_webcams",
     "penndot",
+    "n511pa",
     "cam2",
+    "plugin_json",
 )
+
+
+def _status_from_batch(batch: list[CameraResult] | BaseException,
+                       raw_len: int) -> SourceStatus:
+    if isinstance(batch, BaseException):
+        return SourceStatus(count=0, status="error",
+                            detail=type(batch).__name__)
+    if raw_len == 0:
+        return SourceStatus(count=0, status="empty")
+    return SourceStatus(count=len(batch), status="ok")
 
 
 async def search_area(lat: float, lon: float, radius_km: float) -> DiscoveryResponse:
     coros = [src(lat, lon, radius_km) for src in _SOURCES]
     batches = await asyncio.gather(*coros, return_exceptions=True)
     flat: list[CameraResult] = []
-    raw_counts: dict[str, int | str] = {}
+    sources: dict[str, SourceStatus] = {}
     for name, b in zip(_SOURCE_NAMES, batches):
         if isinstance(b, BaseException):
             log.warning("source %s raised: %s", name, b)
-            raw_counts[name] = f"error: {type(b).__name__}"
+            sources[name] = SourceStatus(count=0, status="error",
+                                         detail=type(b).__name__)
             continue
-        raw_counts[name] = len(b)
+        sources[name] = _status_from_batch(b, len(b))
         flat.extend(b)
 
     raw_dicts = [r.model_dump() for r in flat]
     clean = filter_compliant(raw_dicts)
     counts = Counter(r["source"] for r in clean)
-
-    # #region agent log
-    _dbg(
-        "discovery/service.py:search_area",
-        "search_area finished",
-        {
-            "query": {"lat": lat, "lon": lon, "radius_km": radius_km},
-            "raw_counts_pre_compliance": raw_counts,
-            "compliant_counts": dict(counts),
-            "raw_total": len(flat),
-            "compliant_total": len(clean),
-            "dropped_by_compliance": len(flat) - len(clean),
-        },
-        "H2",
-    )
-    # #endregion
+    for src_name, st in sources.items():
+        if st.status == "ok" and counts.get(src_name, 0) == 0 and st.count > 0:
+            sources[src_name] = SourceStatus(
+                count=0, status="empty",
+                detail="filtered_by_compliance",
+            )
 
     return DiscoveryResponse(
         query={"lat": lat, "lon": lon, "radius_km": radius_km},
         results=[CameraResult(**r) for r in clean],
         fetched_at=utc_now_iso(),
         counts_by_source=dict(counts),
+        sources=sources,
     )

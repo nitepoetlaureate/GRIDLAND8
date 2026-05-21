@@ -45,6 +45,22 @@ def normalize(records: list[dict]) -> list[Aircraft]:
         except (TypeError, ValueError):
             velocity_ms = None
         try:
+            country = r.get("country") or r.get("origin_country")
+            baro_rate = r.get("baro_rate") or r.get("geom_rate")
+            try:
+                vertical_rate_fpm = float(baro_rate) if baro_rate is not None else None
+            except (TypeError, ValueError):
+                vertical_rate_fpm = None
+            mcp = r.get("nav_altitude_mcp")
+            try:
+                nav_altitude_mcp_ft = float(mcp) if mcp is not None else None
+            except (TypeError, ValueError):
+                nav_altitude_mcp_ft = None
+            dst = r.get("dst")
+            try:
+                distance_nm = float(dst) if dst is not None else None
+            except (TypeError, ValueError):
+                distance_nm = None
             ac = Aircraft(
                 icao24=str(r.get("hex", "")).lower(),
                 callsign=(r.get("flight") or "").strip() or None,
@@ -54,7 +70,17 @@ def normalize(records: list[dict]) -> list[Aircraft]:
                 track_deg=float(r["track"]) if r.get("track") is not None else None,
                 velocity_ms=velocity_ms,
                 on_ground=on_ground,
+                origin_country=str(country).strip() if country else None,
                 fetched_at=now,
+                aircraft_type=(str(r.get("t")).strip() if r.get("t") else None),
+                type_desc=(str(r.get("desc")).strip() if r.get("desc") else None),
+                registration=(str(r.get("r")).strip() if r.get("r") else None),
+                operator=(str(r.get("ownOp")).strip() if r.get("ownOp") else None),
+                squawk=(str(r.get("squawk")).strip() if r.get("squawk") else None),
+                category=(str(r.get("category")).strip() if r.get("category") else None),
+                vertical_rate_fpm=vertical_rate_fpm,
+                nav_altitude_mcp_ft=nav_altitude_mcp_ft,
+                distance_nm=distance_nm,
             )
         except Exception as e:
             log.debug("dropping invalid aircraft record: %s", e)

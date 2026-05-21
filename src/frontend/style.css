@@ -25,7 +25,10 @@ html, body {
 
 #cesium-container {
   position: absolute;
-  inset: 0;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
   z-index: 0;
 }
 
@@ -47,7 +50,8 @@ html, body {
 #hud header {
   display: flex;
   justify-content: space-between;
-  align-items: baseline;
+  align-items: center;
+  gap: 8px;
   background: var(--panel);
   border: 1px solid var(--border);
   padding: 8px 12px;
@@ -55,7 +59,67 @@ html, body {
   pointer-events: auto;
 }
 
-.brand { font-weight: 700; letter-spacing: 0.12em; }
+.hud-toggle {
+  background: #0d131c;
+  color: var(--text);
+  border: 1px solid var(--border);
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  font-size: 18px;
+  line-height: 1;
+  flex: 0 0 auto;
+  font-weight: 400;
+}
+
+#hud.hud--collapsed #panel {
+  display: none;
+}
+
+#hud.hud--collapsed .hud-toggle::after {
+  content: none;
+}
+
+.brand {
+  flex: 1 1 auto;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+}
+
+.map-legend {
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 6px 8px;
+  margin: 8px 0 0;
+  font-size: 11px;
+}
+
+.map-legend legend {
+  padding: 0 4px;
+  color: var(--muted);
+}
+
+.layer-legend {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.layer-legend-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 11px;
+  color: var(--text);
+  text-transform: none;
+  letter-spacing: normal;
+}
+
+.layer-legend-item img {
+  width: 18px;
+  height: 18px;
+  flex: 0 0 auto;
+}
 .status { color: var(--muted); font-size: 12px; }
 .status.ok { color: var(--accent); }
 .status.warn { color: var(--warn); }
@@ -126,6 +190,10 @@ button:hover { filter: brightness(1.1); }
   font-weight: 500;
   padding: 4px 8px;
   font-size: 11px;
+}
+
+.warn {
+  color: #ffb454;
 }
 
 .counts, .context {
@@ -212,12 +280,18 @@ button:hover { filter: brightness(1.1); }
   margin-bottom: 8px;
 }
 
-.camera-feed .feed-frame img {
+.camera-feed .feed-frame img,
+.camera-feed .feed-frame iframe {
   width: 100%;
   max-height: 140px;
   object-fit: contain;
   background: #000;
   border-radius: 2px;
+}
+
+.camera-feed .feed-frame--page iframe {
+  min-height: 120px;
+  border: 0;
 }
 
 .camera-feed .feed-hint {
@@ -247,4 +321,231 @@ button:hover { filter: brightness(1.1); }
 .whats-here ul {
   margin: 0;
   padding-left: 16px;
+}
+
+/* Floating selection popup — separate from left HUD */
+.entity-popup {
+  position: absolute;
+  z-index: 20;
+  top: 16px;
+  right: 16px;
+  width: min(380px, calc(100vw - 32px));
+  max-height: min(70vh, 520px);
+  overflow: auto;
+  padding: 12px 14px 14px;
+  border: 1px solid var(--accent);
+  border-radius: 8px;
+  font-size: 12px;
+  color: var(--text);
+  background: rgba(10, 14, 20, 0.94);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.55);
+  pointer-events: auto;
+}
+
+.entity-popup-close {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  background: #0d131c;
+  color: var(--text);
+  border: 1px solid var(--border);
+  font-size: 18px;
+  line-height: 1;
+  font-weight: 400;
+  cursor: pointer;
+}
+
+.entity-popup-title {
+  margin: 0 28px 10px 0;
+  color: var(--accent);
+  font-size: 13px;
+  letter-spacing: 0.04em;
+  padding-right: 8px;
+}
+
+.entity-popup-meta {
+  margin: 8px 0 0;
+  font-size: 11px;
+  color: var(--muted);
+}
+
+.entity-popup a {
+  color: var(--accent);
+}
+
+.entity-popup .feed-frame img {
+  max-width: 100%;
+  margin-top: 8px;
+  border: 1px solid var(--border);
+  border-radius: 2px;
+}
+
+.entity-detail-table,
+.entity-popup .entity-detail-table {
+  font: 12px monospace;
+  width: 100%;
+}
+
+.entity-detail-empty {
+  color: var(--muted);
+  font-size: 11px;
+  margin: 0;
+}
+
+.metro-cameras h5 {
+  margin: 10px 0 6px;
+  font-size: 11px;
+  color: var(--accent);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.metro-cameras ul {
+  margin: 0;
+  padding-left: 0;
+  list-style: none;
+}
+
+.metro-cam-link {
+  background: transparent;
+  border: none;
+  color: var(--accent);
+  cursor: pointer;
+  font: inherit;
+  font-size: 12px;
+  padding: 4px 0;
+  text-align: left;
+  text-decoration: underline;
+}
+
+.metro-cam-link:hover {
+  color: var(--text);
+}
+
+/* Keep Cesium selection ring off the HUD column */
+.cesium-viewer-selectionIndicatorContainer {
+  pointer-events: none;
+}
+
+/* Mapillary street view — bottom dock (globe remains visible above) */
+.psv-entry-chip {
+  position: fixed;
+  z-index: 18;
+  bottom: 24px;
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 10px 16px;
+  border-radius: 8px;
+  border: 1px solid var(--accent);
+  background: rgba(10, 14, 20, 0.92);
+  color: var(--accent);
+  font: 12px monospace;
+  cursor: pointer;
+  pointer-events: auto;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+}
+
+.psv-entry-chip:hover {
+  background: rgba(65, 214, 146, 0.15);
+  color: var(--text);
+}
+
+.psv-dock {
+  position: fixed;
+  z-index: 24;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: min(52vh, 440px);
+  display: flex;
+  flex-direction: column;
+  background: #07090d;
+  border-top: 2px solid var(--accent);
+  box-shadow: 0 -8px 40px rgba(0, 0, 0, 0.55);
+  pointer-events: auto;
+}
+
+.psv-dock-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex: 0 0 auto;
+  padding: 8px 12px;
+  background: var(--panel);
+  border-bottom: 1px solid var(--border);
+  font-size: 12px;
+}
+
+.psv-dock-exit {
+  background: var(--accent);
+  color: #052017;
+  border: none;
+  padding: 8px 14px;
+  border-radius: 4px;
+  font-weight: 700;
+  cursor: pointer;
+  font: inherit;
+}
+
+.psv-dock-hint {
+  color: var(--muted);
+  flex: 1 1 auto;
+}
+
+.psv-dock-link {
+  color: var(--accent);
+  font-size: 11px;
+  text-decoration: none;
+}
+
+.psv-dock-viewport {
+  flex: 1 1 auto;
+  min-height: 0;
+  width: 100%;
+  position: relative;
+}
+
+body.psv-dock-open #hud {
+  max-height: calc(48vh - 32px);
+}
+
+body.psv-dock-open #entity-popup {
+  max-height: min(36vh, 280px);
+}
+
+body.psv-dock-open #cesium-container {
+  bottom: min(52vh, 440px);
+  height: auto;
+}
+
+.map-stack-note {
+  margin: 8px 0 0;
+  padding: 8px;
+  border: 1px dashed var(--border);
+  border-radius: 4px;
+  font-size: 11px;
+  color: var(--muted);
+  line-height: 1.45;
+}
+
+.map-stack-note strong {
+  color: var(--text);
+  font-weight: 600;
+}
+
+.map-stack-note.ok {
+  border-color: var(--accent);
+  color: var(--text);
+}
+
+.cesium-infoBox-title {
+  background: var(--panel);
+  color: var(--text);
+}
+
+.cesium-infoBox-iframe {
+  background: var(--bg);
 }
