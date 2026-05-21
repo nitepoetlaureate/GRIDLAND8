@@ -1338,3 +1338,13 @@ Record post-commit agent changelog and log entries for the shipped release.
 **Entry ID:** myc_202605210114530266
 Record post-commit agent changelog and log entries for the shipped release.
 ---
+
+### 2026-05-20T21:15:15-04:00 — cursor-composer (primary) — `CHANGELOG.md` [806f663]
+**Entry ID:** myc_202605210115160267
+Hook-appended changelog lines for the mycelium sync commit.
+---
+
+### 2026-05-20T21:15:15-04:00 — cursor-composer (primary) — `log.json` [806f663]
+**Entry ID:** myc_202605210115160268
+Hook-appended changelog lines for the mycelium sync commit.
+---
